@@ -1,11 +1,10 @@
-## The Ember Object Model
+## Ember 对象模型
 
-Ember enhances the simple JavaScript object model to support bindings
-and observers, as well as to support a more powerful mixin-based
-approach to code sharing.
+Ember 加强了简单 JavaScript 对象模型来支持绑定和观察者，同样也支持一个
+更强大的基于混合类型的代码共享方法。
 
-At its most basic, you create a new Ember class by using the `extend`
-method on `Ember.Object`.
+从最基本的开始，用 `Ember.Object` 上的 `extend` 方法创建一个新 Ember
+类。
 
 ```javascript
 Person = Ember.Object.extend({
@@ -15,17 +14,15 @@ Person = Ember.Object.extend({
 });
 ```
 
-Once you have built a new class, you can create new instances of the
-class by using the `create` method. Any properties defined on the class
-will be available to instances.
+一旦你已经建立了一个新类，你可以用 `create` 方法来创建一个该类的新实例。
+任何在类中定义的属性会在实例中可用。
 
 ```javascript
 var person = Person.create();
 person.say("Hello") // alerts "Hello"
 ```
 
-When creating an instance, you can also add additional properties to the
-instance by passing in an object.
+创建实例时，你也可以通过传递一个对象来向实例添加额外的属性。
 
 ```javascript
 var tom = Person.create({
@@ -39,13 +36,11 @@ var tom = Person.create({
 tom.helloWorld() // alerts "Hi my name is Tom Dale"
 ```
 
-Because of Ember's support for bindings and observers, you will always
-access properties using the `get` method, and set properties using the
-`set` method.
+由于 Ember 的绑定和观察者支持，你总是会用 `get` 方法来访问属性而用
+`set` 方法来设置属性。
 
-When creating a new instance of an object, you can also override any
-properties or methods defined on the class. For instance, in this case,
-you could override the `say` method from the `Person` class.
+当创建一个对象的新实例，你也可以覆盖类中定义的任何属性或方法。例如，
+在本例中，你可以覆盖 `Person` 类中的 `say` 方法。
 
 ```javascript
 var yehuda = Person.create({
@@ -59,14 +54,14 @@ var yehuda = Person.create({
 });
 ```
 
-You can use the `_super` method on the object (`super` is a reserved
-word in JavaScript) to call the original method you overrode.
+你可以用对象上的 `_super` 方法（`super` 是 JavaScript 保留字）来调用
+你覆盖掉的原始方法。
 
-### Subclassing Classes
+### 继承
 
-You can also create subclasses of classes you create by using the
-`extend` method. In fact, when we created a new class above by calling
-`extend` on `Ember.Object`, we were **subclassing** `Ember.Object`.
+你也可以用 `extend` 创建你所创建的类的子类。事实上，上面我们调用
+`Ember.Object` 上的 `extend` 方法创建新类时，我们就是在创建一个
+`Ember.Object` 的子类。
 
 ```javascript
 var LoudPerson = Person.extend({
@@ -76,8 +71,7 @@ var LoudPerson = Person.extend({
 });
 ```
 
-When subclassing, you can use `this._super` to invoke methods you are
-overriding.
+继承时，你可以用 `this._super` 来调用你正在覆盖的方法。
 
 ### Reopening Classes and Instances
 
