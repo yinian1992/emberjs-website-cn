@@ -73,10 +73,10 @@ var LoudPerson = Person.extend({
 
 继承时，你可以用 `this._super` 来调用你正在覆盖的方法。
 
-### Reopening Classes and Instances
+### 重新打开类和实例
 
-You don't need to define a class all at once. You can reopen a class and
-define new properties using the `reopen` method.
+你不需要一开始就定义好完整的类。你可以用 `reopen` 方法重新打开一
+个类来定义新的属性。
 
 ```javascript
 Person.reopen({
@@ -86,20 +86,19 @@ Person.reopen({
 Person.create().get('isPerson') // true
 ```
 
-When using `reopen`, you can also override existing methods and
-call `this._super`.
+使用 `reopen` 时，你也可以覆盖现有的方法并调用 `this._super`。
 
 ```javascript
 Person.reopen({
-  // override `say` to add an ! at the end
+  // 覆盖 `say` 为在结尾加上一个叹号
   say: function(thing) {
     this._super(thing + "!");
   }
 });
 ```
 
-As you can see, `reopen` is used to add properties and methods to an instance.
-But when you need to create class method or add the properties to the class itself you can use `reopenClass`.
+如你所见，`reopen` 用于向实例添加属性和方法。但当你需要创建类
+方法或向类本身添加属性，你可以使用 `reopenClass`。
 
 ```javascript
 Person.reopenClass({
@@ -111,15 +110,14 @@ Person.reopenClass({
 Person.createMan().get('isMan') // true
 ```
 
-### Computed Properties (Getters)
+### 计算属性（Getter）
 
-Often, you will want a property that is computed based on other
-properties. Ember's object model allows you to define computed
-properties easily in a normal class definition.
+很多时候，你会需要一个基于其它属性计算出的属性。Ember 的对象模
+型允许你在常规的类定义中轻松定义计算属性。
 
 ```javascript
 Person = Ember.Object.extend({
-  // these will be supplied by `create`
+  // 这会被 `create` 支持
   firstName: null,
   lastName: null,
 
@@ -139,22 +137,20 @@ var tom = Person.create({
 tom.get('fullName') // "Tom Dale"
 ```
 
-The `property` method defines the function as a computed property, and
-defines its dependencies. Those dependencies will come into play later
-when we discuss bindings and observers.
+`property` 方法把函数定义为一个计算属性，也定义了依赖。这些
+依赖会在之后介绍绑定和观察者时提到。
 
-When subclassing a class or creating a new instance, you can override
-any computed properties.
+当继承一个类或创建一个新实例时，你可以覆盖任何计算属性。
 
-### Computed Properties (Setters)
+### 计算属性（Setter）
 
-You can also define what Ember should do when setting a computed
-property. If you try to set a computed property, it will be invoked with
-the key and value you want to set it to.
+你同样可以定义当给一个计算属性赋值时 Ember 应该做什么。如果
+你试图给一个计算属性赋值，它会被调用，并传入你想要赋的键和
+值。
 
 ```javascript
 Person = Ember.Object.extend({
-  // these will be supplied by `create`
+  // 这会被 `create` 支持
   firstName: null,
   lastName: null,
 
@@ -184,19 +180,17 @@ person.get('firstName') // Peter
 person.get('lastName') // Wagenet
 ```
 
-Ember will call the computed property for both setters and getters, and
-you can check the number of arguments to determine whether it is being called
-as a getter or a setter.
+Ember 会为 setter 和 getter 都调用计算属性。并且你可以检查
+参数的数量来决定要作为 getter 还是 setter 来调用。
 
-### Observers
+### 观察者
 
-Ember supports observing any property, including computed properties.
-You can set up an observer on an object by using the `addObserver`
-method.
+Ember 支持观察任何属性，包括计算属性。你可以用 `addObserver`
+方法来给对象设置一个观察者。
 
 ```javascript
 Person = Ember.Object.extend({
-  // these will be supplied by `create`
+  // 这会被 `create` 支持
   firstName: null,
   lastName: null,
 
@@ -214,17 +208,16 @@ var person = Person.create({
 });
 
 person.addObserver('fullName', function() {
-  // deal with the change
+  // 处理变更
 });
 
-person.set('firstName', "Brohuda"); // observer will fire
+person.set('firstName', "Brohuda"); // 这会触发观察者
 ```
 
-Because the `fullName` computed property depends on `firstName`,
-updating `firstName` will fire observers on `fullName` as well.
+因为计算属性 `fullName` 依赖 `firstName`，更新 `firstName` 也会
+触发 `fullName` 上的观察者。
 
-Because observers are so common, Ember provides a way to define
-observers inline in class definitions.
+由于观察者如此常用，Ember 提供了类声明中内联的观察者定义方式。
 
 ```javascript
 Person.reopen({
@@ -234,8 +227,8 @@ Person.reopen({
 });
 ```
 
-You can define inline observers by using the `Ember.observer` method if you
-are using Ember without prototype extensions:
+如果你正在使用没有原型扩展的 Ember，你可以用 `Ember.observer`
+方法来定义内联的观察者：
 
 ```javascript
 Person.reopen({
@@ -245,13 +238,13 @@ Person.reopen({
 });
 ```
 
-#### Changes in Arrays
+#### 数组中的变化
 
-Often, you may have a computed property that relies on all of the items in an
-array to determine its value. For example, you may want to count all of the
-todo items in a controller to determine how many of them are completed.
+很多情况，你可能有一个依赖于某个数组中的所有元素来确定值的计算
+属性。例如，你可能想对某个控制器中所有的 todo 元素进行计数来决
+定其中有多少是完成的。
 
-Here's what that computed property might look like:
+那个计算属性看起来会是这样：
 
 ```javascript
 App.todosController = Ember.Object.create({
@@ -266,24 +259,23 @@ App.todosController = Ember.Object.create({
 });
 ```
 
-Note here that the dependent key (`todos.@each.isDone`) contains the special
-key `@each`. This instructs Ember.js to update bindings and fire observers for
-this computed property when one of the following four events occurs:
+注意依赖键（`todos.@each.isDone`）包含了特殊的关键字 `@each` 。
+这让 Ember.js 在下列四种情况中任意一种发生时更新绑定并激活观察
+者：
 
-1. The `isDone` property of any of the objects in the `todos` array changes.
-2. An item is added to the `todos` array.
-3. An item is removed from the `todos` array.
-4. The `todos` property of the controller is changed to a different array.
+1. `todos` 数组中任意对象的 `isDown` 属性发生变化。
+2. 一个元素被添加到 `todos` 数组。
+3. `todos` 数组中的一个元素被删除
+4. 控制器的 `todos` 属性换成另一个数组
 
-In the example above, the `remaining` count is `1`:
+在上面的例子中， `remaining` 计数为 `1` ：
 
 ```javascript
 App.todosController.get('remaining');
 // 1
 ```
-
-If we change the todo's `isDone` property, the `remaining` property is updated
-automatically:
+如果我们修改了 todo 的 `isDown` 属性， `remaining` 属性会自动
+更新：
 
 ```javascript
 var todos = App.todosController.get('todos');
@@ -301,16 +293,16 @@ App.todosController.get('remaining');
 ```
 
 
-### Bindings
+### 绑定
 
-A binding creates a link between two properties such that when one changes, the
-other one is updated to the new value automatically. Bindings can connect
-properties on the same object, or across two different objects. Unlike most other
-frameworks that include some sort of binding implementation, bindings in
-Ember.js can be used with any object, not just between views and models.
+绑定创建了两个属性之间的联系，如此当其中的一个变更时，另一个也
+会自动更新到新的值。绑定可以关联同一个对象上的属性，也可以关联
+两个不同对象间的属性。不像大多数其它的框架包含某种程度的绑定实
+现，在 Ember.js 中绑定可以在任意对象上使用，而不仅仅局限在视图
+与模型之间。
 
-The easiest way to create a two-way binding is by creating a new property
-with the string `Binding` at the end, then specifying a path from the global scope:
+创建一个双向绑定的最简单的方法就是创建一个名称以 `Binding` 结
+尾的新属性，之后指定一个相对全局作用域的路径。
 
 ```javascript
 App.wife = Ember.Object.create({
@@ -323,22 +315,20 @@ App.husband = Ember.Object.create({
 
 App.husband.get('householdIncome'); // 80000
 
-// Someone gets raise.
+// 某些人涨了。
 App.husband.set('householdIncome', 90000);
 App.wife.get('householdIncome'); // 90000
 ```
 
-Note that bindings don't update immediately. Ember waits until all of your
-application code has finished running before synchronizing changes, so you can
-change a bound property as many times as you'd like without worrying about the
-overhead of syncing bindings when values are transient.
+注意绑定不是立即更新的。Ember 在所有应用代码执行完毕后才会同
+步变更，所以你无限次修改一个限定的属性，而不用担心瞬时值的绑
+定同步带来的开销。
 
-#### One-Way Bindings
+#### 单向绑定
 
-A one-way binding only propagates changes in one direction. Usually, one-way
-bindings are just a performance optimization and you can safely use
-the more concise two-way binding syntax (as, of course, two-way bindings are
-de facto one-way bindings if you only ever change one side).
+单向绑定只会在一个方向上传递。通常，使用单向绑定只是为了优化
+性能，你可以安全地使用更简洁的双向绑定语法（当然同样地，如果
+你总是改变单面，双向绑定实际上就是单向绑定）。
 
 ```javascript
 App.user = Ember.Object.create({
@@ -349,34 +339,30 @@ App.userView = Ember.View.create({
   userNameBinding: Ember.Binding.oneWay('App.user.fullName')
 });
 
-// Changing the name of the user object changes
-// the value on the view.
+// 修改 user 对象的 name 也会修改视图中的值。
 App.user.set('fullName', "Krang Gates");
-// App.userView.userName will become "Krang Gates"
+// App.userView.userName 会变成 "Krang Gates"
 
-// ...but changes to the view don't make it back to
-// the object.
+// ...但是视图中的变更不会返回到对象上。
 App.userView.set('userName', "Truckasaurus Gates");
 App.user.get('fullName'); // "Krang Gates"
 ```
 
-### What Do I Use When?
+### 术业有专攻
 
-Sometimes new users are confused about when to use computed properties,
-bindings and observers. Here are some guidelines to help:
+有时新用户会困扰何时使用计算属性、绑定和观察者。下面给出的指
+导会有所裨益：
 
-1. Use *computed properties* to build a new property by synthesizing other
-properties. Computed properties should not contain application behavior, and
-should generally not cause any side-effects when called. Except in rare cases,
-multiple calls to the same computed property should always return the same
-value (unless the properties it depends on have changed, of course.)
+1. 用 *计算属性* 合成其它属性来构成一个新属性。计算属性不应该
+包含应用行为，并且几乎不应该在调用时导致任何副作用。除了在极
+少情况下，多次调用相同的计算属性应该始终返回相同值（当然除非
+属性的依赖已经更改。）
 
-2. *Observers* should contain behavior that reacts to changes in another
-property. Observers are especially useful when you need to perform some
-behavior after a binding has finished synchronizing.
+2. *观察者* 应该包含对另一属性中变更反应的行为。当你需要在绑定
+完成同步后执行一些行为时，观察者特别的有用。
 
-3. *Bindings* are most often used to ensure objects in two different layers
-are always in sync. For example, you bind your views to your controller using
-Handlebars. You may often bind between two objects in the same layer. For
-example, you might have an `App.selectedContactController` that binds to the
-`selectedContact` property of `App.contactsController`.
+3. *绑定* 是保证两个不同层的对象始终保持同步的最常用手段。例
+如，你用 Handlebars 绑定视图到控制器上。你可能会经常绑定同一
+个层的两个对象。例如，你可能会有一个绑定到
+`App.contactsController` 的 `selectedContact` 属性的
+`App.selectedContactController`。
