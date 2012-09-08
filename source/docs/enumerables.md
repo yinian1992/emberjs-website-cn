@@ -1,10 +1,11 @@
-## The Ember Enumerable API
+## Ember 枚举量 API
 
-### What Are Enumerables?
+### 什么是枚举量？
 
-In Ember, an Enumerable is any object that contains a number of child objects, and which allows you to work with those children using the Enumerable interface. The most basic Enumerable is the built-in JavaScript Array.
+在 Ember 中，枚举量是任何包含若干子对象的对象，并且润徐你在那些子对象上使用枚举量接口。
+最基本的枚举量就是内置的 JavaScript 数组。
 
-For instance, all Enumerables support the standard `forEach` method:
+例如，所有的枚举量支持标准的 `forEach` 方法：
 
 ```javascript
 [1,2,3].forEach(function(item) {
@@ -12,7 +13,7 @@ For instance, all Enumerables support the standard `forEach` method:
 });
 ```
 
-In general, Enumerable methods, like `forEach`, take an optional second parameter, which will become the value of `this` in the callback function:
+一般地，枚举量方法，诸如 `forEach` ，接受额外的第二个参数，即回调函数中的 `this` 值：
 
 ```javascript
 var array = [1,2,3];
@@ -22,7 +23,7 @@ array.forEach(function(item) {
 }, array)
 ```
 
-Among other reasons, you will find this useful when using another Enumerable method as a callback to `forEach`:
+还有其它理由，你会发现当使用另一个枚举量方法作为 `forEach` 回调是很有用的：
 
 ```javascript
 var array = [1,2,3];
@@ -30,29 +31,29 @@ var array = [1,2,3];
 array.forEach(array.removeObject, array);
 ```
 
-NOTE: This second parameter helps work around a limitation of JavaScript which sets the value of `this` to `window` in methods used this way.
+注意：第二个参数用于解决 JavaScript 中把方法中的 `this` 设置为 `window` 的限制。
 
-### Enumerables in Ember
+### Ember 中的可枚举量
 
-In general, Ember objects that represent lists implement the Enumerable interface. Some examples:
+通常，表示成列表的 Ember 对象实现了枚举量接口。例如：
 
- * *Array*: Ember extends the native JavaScript Array with the Enumerable interface.
- * *ArrayProxy*: A construct that wraps a native Array and adds additional functionality for the view layer.
- * *Set*: An object that can quickly answer whether it includes an object.
+ * *Array*: Ember 用枚举量接口扩展了原生的 JavaScript 数组。
+ * *ArrayProxy*: 一个包裹原生数组并为视图层添加额外功能的构造。
+ * *Set*: 一个可以快速会带是否包含某对象的对象。
 
-### The Enumerable Interface
+### 枚举量接口
 
-#### Parameters
+#### 参数
 
-The callbacks to Enumerable methods take three arguments:
+枚举量方法的回调接受三个参数：
 
- * *item*: the item for the current iteration.
- * *index*: an Integer, counting up from 0.
- * *self*: the Enumerable itself.
+ * *item*: 当前迭代的项目。
+ * *index*: 从 0 开始计的整数。
+ * *self*: 枚举量本身。
 
-#### Enumeration
+#### 枚举
 
-To enumerate all the values of an enumerable object, use the `forEach` method:
+要枚举一个可枚举对象的所有值，使用 `forEach` 方法：
 
 ```javascript
 enumerable.forEach(function(item, index, self) {
@@ -60,7 +61,7 @@ enumerable.forEach(function(item, index, self) {
 });
 ```
 
-To invoke some method on each element of an enumerable object, use the `invoke` method:
+要在一个可枚举对象上的每个元素调用某个方法，使用 `invoke` 方法：
 
 ```javascript
 Person = Ember.Object.extend({
@@ -82,49 +83,54 @@ people.invoke('sayHello');
 // Hello from Majd
 ```
 
-#### First and Last
+#### 首和尾
 
-You can get the first or last object from an Enumerable by getting `firstObject` or `lastObject`.
+你可以通过获取 `firstObject` 或 `lastObject` 来获取可枚举量的第一个和最后一
+个对象。
 
 ```javascript
 [1,2,3].get('firstObject') // 1
 [1,2,3].get('lastObject')  // 3
 ```
 
-#### Converting to Array
+#### 转换成数组
 
-This one is simple. To convert an Enumerable into an Array, simply call its `toArray` method.
+这非常简单。要把一个可枚举量转换成数组，只需调用它的 `toArray` 方法。
 
-#### Transforming
 
-You can transform an Enumerable into a derived Array by using the `map` method:
+#### 变换
+
+你可以用 `map` 方法把一个可枚举量变换成一个派生的数组：
 
 ```javascript
 ['Goodbye', 'cruel', 'world'].map(function(item, index, self) {
   return item + "!";
 });
 
-// returns ["Goodbye!", "cruel!", "world!"]
+// 返回 ["Goodbye!", "cruel!", "world!"]
 ```
 
-#### Setting and Getting on Each Object
+#### 在每个对象上设置和获取值
 
-A very common use of `forEach` and `map` is to get (or set) a property on each element. You can use the `getEach` and `setEach` methods to accomplish these goals.
+`forEach` 和 `map` 的一个十分常用的用法是获取（或设置）每个元素上的属性。你
+可以用 `getEach` 和 `setEach` 方法来完成这些任务。
 
 ```javascript
 var arr = [Ember.Object.create(), Ember.Object.create()];
 
-// we now have an Array containing two Ember.Objects
+// 我们现在有了一个包含两个 Ember.Objects 的数组
 
 arr.setEach('name', 'unknown');
 arr.getEach('name') // ['unknown', 'unknown']
 ```
 
-#### Filtering
+#### 过滤
 
-Another common task to perform on an Enumerable is to take the Enumerable as input, and return an Array after filtering it based on some criteria.
+另一个要在可枚举量上经常执行的任务是把可枚举量作为输入，并返回一个基于某些条
+件过滤后的数组。
 
-For arbitrary filtering, use the (you guessed it) `filter` method. The filter method expects the callback to return `true` if Ember should include it in the final Array, and `false` or `undefined` if Ember should not.
+对任意个过滤，使用（你可能已经猜到了） `filter` 方法。 `filter` 方法在回调为
+`true` 时，把值加入最终的数组中，而 `false` 和 `undefined` 不会加入该值。
 
 ```javascript
 var arr = [1,2,3,4,5];
@@ -133,10 +139,11 @@ arr.filter(function(item, index, self) {
   if (item < 4) { return true; }
 })
 
-// returns [1,2,3]
+// 返回 [1,2,3]
 ```
 
-When working with a collection of Ember objects, you will often want to filter a set of objects based upon the value of some property. The `filterProperty` method provides a shortcut.
+当处理一个 Ember 对象的集合时，你会经常要基于某些属性的值来过滤一组对象。那
+么 `filterProperty` 方法提供了捷径。
 
 ```javascript
 Todo = Ember.Object.extend({
@@ -151,14 +158,16 @@ todos = [
 
 todos.filterProperty('isDone', true);
 
-// returns an Array containing just the first item
+// 返回一个只包含第一个元素的数组
 ```
 
-If you want to return just the first matched value, rather than an Array containing all of the matched values, you can use `find` and `findProperty`, which work just like `filter` and `filterProperty`, but return only one item.
+如果你要只返回第一个匹配的值，而不是一个包含所有匹配值的数组，你可以使用
+`find` 和 `findProperty` ，其机制类似 `filter` 和 `filterProperty` ，只不过
+仅返回一个项目。
 
-#### Aggregate Information (All or Any)
+#### 聚合信息（all 或 any）
 
-If you want to find out whether every item in an Enumerable matches some condition, you can use the `every` method:
+如果你要查明可枚举量中的每个项目是否匹配某个条件，你可以使用 `every` 方法：
 
 ```javascript
 Person = Ember.Object.extend({
@@ -175,20 +184,21 @@ people.every(function(person, index, self) {
   if(person.get('isHappy')) { return true; }
 });
 
-// returns false
+// 返回 false
 ```
 
-If you want to find out whether at least one item in an Enumerable matches some conditions, you can use the `some` method:
+如果你要查明在可枚举量中是否至少一个项目匹配某个条件，你可以用 `some` 方法：
 
 ```javascript
 people.some(function(person, index, self) {
   if(person.get('isHappy')) { return true; }
 });
 
-// returns true
+// 返回 true
 ```
 
-Just like the filtering methods, the `every` and `some` methods have analogous `everyProperty` and `someProperty` methods.
+如同过滤方法， `every` 和 `some` 方法也有类似的 `everyProperty` 和
+`someProperty` 方法。
 
 ```javascript
 people.everyProperty('isHappy', true) // false

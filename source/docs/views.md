@@ -1,15 +1,13 @@
-## Views In-Depth
+## 深入视图
 
-Now that you're familiar with using Handlebars, let's go more in-depth on
-how to both handle events, and customize views to your needs.
+现在你已经熟悉了 Handlebars 的用法，让我们深入如何处理事件和按需定制视图。
 
-### Handling Events
+### 事件处理
 
-Instead of having to register event listeners on elements you'd like to
-respond to, simply implement the name of the event you want to respond to
-as a method on your view.
+只需简单实现一个与你要响应事件同名的视图方法，而不是在元素上注册一个事件监听
+器。
 
-For example, imagine we have a template like this:
+例如，假设我们有这样一个模板：
 
 ```handlebars
 {{#view App.ClickableView}}
@@ -17,8 +15,7 @@ This is a clickable area!
 {{/view}}
 ```
 
-Let's implement App.ClickableView such that when it is
-clicked, an alert is displayed:
+让我们实现 `App.ClickableView` ，这样当点击它时，会显示一个警告：
 
 ```javascript
 App.ClickableView = Ember.View.extend({
@@ -28,15 +25,15 @@ App.ClickableView = Ember.View.extend({
 });
 ```
 
-Events bubble up from the target view to each parent view in
-succession, until the root view. These values are read-only. If you want to manually manage views in JavaScript (instead of creating them
-using the {{view}} helper in Handlebars), see the Ember.ContainerView documentation below.
+事件会从目标视图连续冒泡到每个父视图，直到根视图。这些值会是只读的。如果你想
+要在 JavaScript （而不是用 Handlebars 中的 `{{view}}` 辅助标记创建它们）中手
+动管理它们，详见下面的 `Ember.ContainerView` 文档。
 
-### Manually Managed Views with Ember.ContainerView
+### 用 Ember.ContainerView 手动管理视图
 
-Usually, views create their child views by using the `{{view}}` helper. Sometimes it is useful to manually manage a view's
-child views. If you create an instance of `Ember.ContainerView`, the `childViews` array is editable. Views that you add
-are rendered to the page, and views that you remove are removed from the DOM.
+通常，视图用 `{{view}}` 辅助标记来创建子视图。又是，手动管理视图的子视图是很
+有效的。如果你创建一个 `Ember.ContainerView` 的实例， `childViews` 数组会可
+编辑。你添加的视图将渲染到页面，并且你删除的视图也会从 DOM 中移除。
 
 ```javascript
 var container = Ember.ContainerView.create();
@@ -48,8 +45,8 @@ var coolView = App.CoolView.create(),
 childViews.pushObject(coolView);
 ```
 
-As a shorthand, you can specify the child views as properties and the child views as a list of keys. When the
-container view is created, these views will be instantiated and added to the child views array:
+简写方案是，把子视图作为属性或是子视图作为列表的键。当容器视图创建后，这些视
+图也会被实例化并且加入到子视图数组中：
 
 ```javascript
 var container = Ember.ContainerView.create({
@@ -60,13 +57,13 @@ var container = Ember.ContainerView.create({
 });
 ```
 
-### Render Pipeline
+### 渲染管道
 
-Before your views are turned into DOM elements, they first exist as a string representation. As views render, they turn
-each of their child views into strings and concatenate them together.
+在你的视图转换成 DOM 元素钱，它们首先表示为字符串。当视图渲染时，它们把每个
+子视图转换为字符串并连接它们。
 
-If you'd like to use something other than Handlebars, you can override a view's `render` method to generate a custom
-string of HTML.
+如果你想用 Handlebars 之外的东西，你可以覆盖视图的 `render` 方法来生成自定义
+的 HTML 字符串。
 
 ```javascript
 App.CoolView = Ember.View.create({
@@ -76,13 +73,13 @@ App.CoolView = Ember.View.create({
 });
 ```
 
-This makes it easy to support template engines other than Handlebars; though do note that if you override rendering,
-values will not update automatically. Any updates will be your responsibility.
+这使得支持 Handlebars 之外的模板引擎非常容易；只是注意，如果你覆盖了渲染方法，
+值不会自动更新。任何更新都是你的任务了。
 
-### Customizing the HTML Element
+### 自定义 HTML 元素
 
-A view is represented by a single DOM element on the page. You can change what kind of element is created by
-changing the `tagName` property.
+视图会表现为页面上的一个 DOM 元素。你可以改变 `tagName` 属性来决定要创建哪种
+元素。
 
 ```javascript
 App.MyView = Ember.View.extend({
@@ -90,7 +87,8 @@ App.MyView = Ember.View.extend({
 });
 ```
 
-You can also specify which class names are applied to the view by setting its `classNames` property to an array of strings:
+你也可以通过设置 `classNames` 属性指定应用到视图的 class 名，它是一个字符串
+的数组：
 
 ```javascript
 App.MyView = Ember.View.extend({
@@ -98,8 +96,8 @@ App.MyView = Ember.View.extend({
 });
 ```
 
-If you want class names to be determined by the state of properties on the view, you can use class name bindings. If you bind to
-a Boolean property, the class name will be added or removed depending on the value:
+如果你想让 class 名由视图的状态来决定，你可以使用 class 名绑定。如果你绑定到
+一个布尔属性，class 名会根据该属性值来添加或移除：
 
 ```javascript
 App.MyView = Ember.View.extend({
@@ -108,16 +106,16 @@ App.MyView = Ember.View.extend({
 });
 ```
 
-This would render a view like this:
+这会渲染成这样：
 
 ```html
 <div class="ember-view is-urgent">
 ```
 
-If isUrgent is changed to false, then the `is-urgent` class name will be removed.
+如果 `isUrgent` 被修改为 `false`，则 `is-urgent` class 会被移除。
 
-By default, the name of the Boolean property is dasherized. You can customize the class name
-applied by delimiting it with a colon:
+默认情况下，布尔属性的值会被“-”变换。你可以用冒号分割，自定义应用到视图的类
+名：
 
 ```javascript
 App.MyView = Ember.View.extend({
@@ -126,13 +124,13 @@ App.MyView = Ember.View.extend({
 });
 ```
 
-This would render this HTML:
+这会渲染成这份 HTML：
 
 ```html
 <div class="ember-view urgent">
 ```
 
-Besides the custom class name for the value being `true`, you can also specify a class name which is used when the value is `false`:
+除了值为 `true` 时的自定义 class 名，你也可以指定在值为 `false` 时的 class 名：
 
 ```javascript
 App.MyView = Ember.View.extend({
@@ -141,13 +139,13 @@ App.MyView = Ember.View.extend({
 });
 ```
 
-This would render this HTML:
+这会渲染出这样的 HTML：
 
 ```html
 <div class="ember-view disabled">
 ```
 
-You can also specify to only add a class when the property is `false` by declaring `classNameBindings` like this:
+你同样也可以只指定属性为 `false` 时添加的 class，只需这样声明 `classNameBindings`：
 
 ```javascript
 App.MyView = Ember.View.extend({
@@ -156,21 +154,19 @@ App.MyView = Ember.View.extend({
 });
 ```
 
-This would render this HTML:
+这会渲染这样的 HTML：
 
 ```html
 <div class="ember-view disabled">
 ```
 
-If the `isEnabled` property is set to `true`, no class name is added:
+如果 `isEnabled` 属性被设置为 `true` ，那么不会添加任何 class：
 
 ```html
 <div class="ember-view">
 ```
 
-
-If the bound value is a string, that value will be added as a class name without
-modification:
+如果绑定的值是一个字符串，那个值会被直接作为 class 名添加：
 
 ```javascript
 App.MyView = Ember.View.extend({
@@ -179,16 +175,16 @@ App.MyView = Ember.View.extend({
 });
 ```
 
-This would render this HTML:
+这会渲染这样的 HTML：
 
 ```html
 <div class="ember-view highestPriority">
 ```
 
 
-### Attribute Bindings on a View
+### 视图上的属性绑定
 
-You can bind attributes to the DOM element that represents a view by using `attributeBindings`:
+你可以用 `attributeBindings` 绑定表示视图 DOM 元素的属性：
 
 ```javascript
 App.MyView = Ember.View.extend({
