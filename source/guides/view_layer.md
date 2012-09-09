@@ -1,152 +1,223 @@
-# The Ember.js View Layer
+# Ember.js 的视图层
 
-This guide goes into extreme detail about the Ember.js view layer. It is
-intended for an experienced Ember developer, and includes details that
-are unnecessary for getting started with Ember.
+本指导会详尽阐述 Ember.js 视图层的细节。为想成为熟练 Ember 开发者准备，且包
+含了对于入门 Ember 不必要的细节。
 
-Ember.js has a sophisticated system for creating, managing and rendering a hierarchy of views that connect to the browser's DOM. Views are responsible for responding to user events, like clicks, drags, and scrolls, as well as updating the contents of the DOM when the data underlying the view changes.
+Ember.js 有一套复杂的用于创建、管理并渲染连接到浏览器 DOM 上的层级视图的系
+统。视图负责响应诸如点击、拖拽以及滚动等的用户事件，也在视图底层数据变更时更
+新 DOM 的内容。
 
-View hierarchies are usually created by evaluating a Handlebars template. As the template is evaluated, child views are added. As the templates for _those_ child views are evaluated, they may have child views added, and so on, until an entire hierarchy is created.
+视图层级通常由求值一个 Handlebars 模板创建。当模板求值后，会添加子视图。当
+_那些_ 子视图求值后，会添加它们的子视图，如此递推，直到整个层级被创建。
 
-Even if you do not explicitly create child views from your Handlebars templates, Ember.js internally uses the view system to update bound values. For example, every Handlebars expression `{{value}}` creates a view behind-the-scenes that knows how to update the bound value if it changes.
+即使你并没有在 Handlebars 模板中显式地创建子视图，Ember.js 内部仍使用视图系
+统更新绑定的值。例如，每个 Handlebars 表达式 `{{value}}` 幕后创建一个视图，
+这个视图知道当值变更时如何更新绑定值。
 
-You can also dynamically make changes to the view hierarchy at application runtime using the `Ember.ContainerView` class. Rather than being template-driven, a container view exposes an array of child view instances that can be manually managed.
+你也可以在应用运行时用 `Ember.ContainerView` 类对视图层级做出修改。一个容器
+视图暴露一个可以手动修改的子视图实例数组，而非模板驱动。
 
-Views and templates work in tandem to provide a robust system for creating whatever user interface you dream up. End users should be isolated from the complexities of things like timing issues while rendering and event propagation. Application developers should be able to describe their UI once, as a string of Handlebars markup, and then carry on with their application without having to worry about making sure that it remains up-to-date.
+视图和模板串联工作提供一套用于创建任何你梦寐以求的用户界面的稳健系统。最终用
+户应从诸如当渲染和事件传播是的计时事件之类的复杂东西中隔离开。应用开发者应可
+以一次性把他们的 UI 描述成 Handlebars 标记字符串，然后继续完成他们的应用，而
+不必烦恼于确保它一直是最新的。
 
-## What problems does it solve?
+## 它解决了什么问题？
 
-### Child Views
+### 子视图
 
-In a typical client-side application, views may represent elements nested inside of each other in the DOM. In the naïve solution to this problem, separate view objects represent each DOM element, and ad-hoc references help the various view object keep track of the views conceptually nested inside of them.
+在典型的客户端应用中，视图同时在本身和 DOM 中表示嵌套的元素。在解决这个问题
+的天真方案中，独立的视图对象表示单个 DOM 元素，专门的引用解决不同种类的视图
+保持对概念中嵌套在它们内部的视图的跟踪。
 
-Here is a simple example, representing one main app view, a collection nested inside of it, and individual items nested inside of the collection.
+
+这里是一个简单的例子，表示一个应用主视图，里面有一集合嵌套视图，且独立的元素在集合内嵌套。
 
 <figure>
   <img src="/images/view-guide/view-hierarchy-simple.png">
 </figure>
 
-This system works well at first glance, but imagine that we want to open Joe's Lamprey Shack at 8am instead of 9am. In this situation, we will want to re-render the App View. Because the developer needed to build up the references to the children on an ad-hoc basis, this re-rendering process has several problems.
+这个系统第一眼看上去毫无异样，但是想象我们要在上午 8 点而不是上午 9 点开放乔
+的七鳃鳗小屋。在这种情况下，我们会想要重新渲染应用视图。因为开发者需要构建指
+向在一个特殊基础上的子视图的引用，这个重渲染过程存在若干问题。
 
-In order to re-render the App View, the App View must also manually re-render the child views and re-insert them into App View's element. If implemented perfectly, this process works well, but it relies upon a perfect, ad hoc implementation of a view hierarchy. If any single view fails to implement this precisely, the entire re-render will fail.
+为了重新渲染应用视图，应用视图也必须手动重新渲染子视图并重新把它们插入到应用
+视图的元素中。如果实现得完美，这个过程会正常工作，但它依赖于一个完美的，专门
+的视图层级实现。如果任何一个视图没有精确地实现它，整个重新渲染过程会失败。
 
-In order to avoid these problems, Ember's view hierarchy has the concept of child views baked in.
+为了避免这些问题，Ember 的视图层级从概念上就带有子视图的烙印。
 
 <figure>
   <img src="/images/view-guide/view-hierarchy-ember.png">
 </figure>
 
-When the App View re-renders, Ember is responsible for re-rendering and inserting the child views, not application code. This also means that Ember can perform any memory management for you, such as cleaning up observers and bindings.
+当应用时图重新渲染时，Ember 而不是应用代码负责重新渲染并插入子视图。这也意味
+着 Ember 可以为你执行任何内存管理，比如清理观察者和绑定。
 
-Not only does this eliminate quite a bit of boilerplate code, but it eliminates the possibility that an imperfectly implemented view hierarchy will cause unexpected failures.
+这不仅在一定程度上消灭了样板代码，也破除了有瑕疵的视图层级实现带来的未期失败
+的可能。
 
-### Event Delegation
+### 事件委派
 
-In the past, web developers have added event listeners to individual elements in order to know when the user interacts with them. For example, you might have a `<div>` element on which you register a function that gets called when the user clicks it.
+在过去，web 开发者已经用在独立的单个元素上添加事件监听器来获知什么时候用户与
+它们交互。例如，你会有一个 `<div>` 元素，其上注册了一个当用户点击它时触发的
+函数。
 
-However, this approach often does not scale when dealing with large numbers of interactive elements. For example, imagine a `<ul>` with 100 `<li>`s in it, with a delete button next to each item. Since the behavior is the same for all of these items, it would be inefficient to create 100 event listeners, one for each delete button.
+尽管如此，这个途径在处理大数量交互元素上不会缩放。比如，想象一个带有 100 个
+`<li>` 的 `<ul>` ，每个项目后都有一个删除按钮。既然所有的这些项目行为都是一
+致的，为每个删除按钮创建共计 100 个事件监听器无疑是低效的。
 
 <figure>
   <img src="/images/view-guide/undelegated.png">
 </figure>
 
-To solve this problem, developers discovered a technique called "event delegation". Instead of registering a listener on each element in question, you can register a single listener for the containing element and use `event.target` to identify which element the user clicked on.
+要解决这个问题，开发者发现了一种名为“事件委派”的技术。你可以在容器元素上注册
+一个监听器并使用 `event.target` 来识别哪个元素是用户点击的，而不是为问题中的
+每个项目创建一个监听器。
 
 <figure>
   <img src="/images/view-guide/delegated.png">
 </figure>
 
-Implementing this is a bit tricky, because some events (like `focus`, `blur` and `change`) don't bubble. Fortunately, jQuery has solved this problem thoroughly; using jQuery's `on` method reliably works for all native browser events.
+实现这有一些微妙，因为一些事件（比如 `focus` 、 `blur` 和 `change` ）不会冒
+泡。幸运的是，jQuery 已经彻底解决了这个问题；用 jQuery 的 `on` 方法可以可靠
+地处理所有原生浏览器事件。
 
-Other JavaScript frameworks tackle this problem in one of two ways. In the first approach, they ask you to implement the naïve solution yourself, creating a separate view for each element. When you create the view, it sets up an event listener on the view's element. If you had a list of 500 items, you would create 500 views and each would set up a listener on its own element.
+其它 JavaScript 框架用两种方法中的其一来处理这个问题。第一种是，它们要你自己
+实现原生解决方案，为每个项目创建独立的视图。当你创建视图，它在视图的元素上设
+置一个监听器。如果你有一个含有 500 个项目的列表，你会创建 500 个视图并且每个
+视图都会在它自己的元素上设置一个监听器。
 
-In the second approach, the framework builds in event delegation at the view level. When creating a view, you can supply a list of events to delegate and a method to call when the event occurs. This leaves identifying the context of the click (for example, which item in the list) to the method receiving the event.
+第二种方法是，框架在视图层内置事件委派。当创建一个视图，你可以提供一个事件列
+表来在事件发生时委派一个方法来调用。这只剩下识别接受事件的方法的点击上下文
+（比如，列表中的哪个项目）。
 
-You are now faced with an uncomfortable choice: create a new view for each item and lose the benefits of event delegation, or create a single view for all of the items and have to store information about the underlying JavaScript object in the DOM.
+你现在要面对两个令人不安的选择：为每个项目创建一个新视图，这样会丧失事件委派
+的优势，或是为所有项目创建单个视图，这样必须存储 DOM 中底层 JavaScript 的信息。
 
-In order to solve this problem, Ember delegates all events to the application's root element (usually the document `body`) using jQuery. When an event occurs, Ember identifies the nearest view that handles the event and invokes its event handler. This means that you can create views to hold a JavaScript context, but still get the benefit of event delegation.
+要解决这个问题，Ember 用 jQuery 把所有事件委派到应用的根元素（通常是文档的
+`body` ）。当一个事件发生，Ember 识别出最近的处理事件视图并调用它的事件处理
+器。这意味着你可以创建视图来保存一个 JavaScript 上下文，但仍然从事件委派上受
+益。
 
-Further, because Ember registers only one event for the entire Ember application, creating new views never requires setting up event listeners, making re-renders efficient and less error-prone. When a view has child views, this also means that there is no need to manually undelegate views that the re-render process replaces.
 
-### The Rendering Pipeline
+进一步地，因为 Ember 只为整个 Ember 应用注册一个事件，创建新视图永远都不需要
+设置事件监听器，这使得重渲染高效且免于出错。当视图有一个子视图，这也意味着不
+需要手动取消委派重新渲染过程中替换掉的视图。
 
-Most web applications specify their user interface using the markup of a particular templating language. For Ember.js, we've done the work to make templates written using the Handlebars templating language automatically update when the values used inside of them are changed.
+### 渲染管道
 
-While the process of displaying a template is automatic for developers, under the hood there are a series of steps that must be taken to go from the original template to the final, live DOM representation that the user sees.
+大多数 web 应用用特殊的模板语言标记来指定它们的用户界面。对于 Ember.js，我们
+已经完成用可在值修改的时候自动更新模板的 Handlebars 模板语言来编写模板。
 
-This is the approximate lifecycle of an Ember view:
+虽然显示模板的过程对开发者是自动的，但其遮盖了把原始模板转换为最终模板、生成
+用户可见的 DOM 表示的一系列必要步骤。
+
+这是 Ember 视图的近似生命周期：
 
 <figure>
   <img src="/images/view-guide/view-lifecycle-ember.png">
 </figure>
 
-#### 1. Template Compilation
+#### 1. 模板编译
 
-The application's templates are loaded over the network or as part of the application payload in string form. When the application loads, it sends the template string to Handlebars to be compiled into a function. Once compiled, the template function is saved, and can be used by multiple views repeatedly, each time they need to re-render.
+应用的模板通过网络加载或以字符串形式作为应用的载荷。当应用加载时，它发送模板
+字符串到 Handlebars 来编译成函数。一经编译，模板函数会被保存，且可以被多个视
+图重复使用，每次都它们都需重新编译。
 
-This step may be omitted in applications where the templates are pre-compiled on the server. In those cases, the template is transferred not as the original, human-readable template string but as the compiled code.
+这个步骤会在应用中服务器预编译模板的地方发出。在那些情况下，模板不作为原始的
+人类可读的模板传输，而是编译后的代码。
 
-Because Ember is responsible for template compilation, you don't have to do any additional work to ensure that compiled templates are reused.
+因为 Ember 负责模板编译，你不需要做任何额外的工作来保证编译后的模板可以重
+用。
 
-#### 2. String Concatenation
+#### 2. 字符串的连接
 
-A view's rendering process is kickstarted when the application calls `append` or `appendTo` on the view. Calling `append` or `appendTo` **schedules** the view to be rendered and inserted later. This allows any deferred logic in your application (such as binding synchronization) to happen before rendering the element.
+当应用在视图上调用 `append` 或 `appendTo` 时，一个视图渲染过程会被启动。
+`append` 或 `appendChild` 调用 **安排** 视图渲染并在之后插入。这允许应用中的
+延迟逻辑（譬如绑定同步）在渲染元素之前执行。
 
-To begin the rendering process, Ember creates a `RenderBuffer` and gives it to the view to append its contents to. During this process, a view can create and render child views. When it does so, the parent view creates and assigns a `RenderBuffer` for the child, and links it to the parent's `RenderBuffer`.
+要开始渲染过程，Ember 创建一个 `RenderBuffer` 并把它呈递给视图来把视图的内容
+附加到上面。在这个过程中，视图可以创建并渲染子视图。当它这么做时，父视图创建
+并分配一个 `RenderBuffer` 给子视图，并把它连接到父视图的 `RenderBuffer` 上。
 
-Ember flushes the binding synchronization queue before rendering each view. By syncing bindings before rendering each view, Ember guarantees that it will not render stale data it needs to replace right away.
+Ember 在渲染每个视图前刷新绑定同步队列。这样，Ember 保障不会渲染需要立即替换
+的过期数据。
 
-Once the main view has finished rendering, the render process has created a tree of views (the "view hierarchy"), linked to a tree of buffers. By walking down the tree of buffers and converting them into Strings, we have a String that we can insert into the DOM.
+一旦主视图完成渲染，渲染过程会创建一个视图树（即“视图层级”），连接到缓冲区树
+上。通过向下遍历缓冲区树并把它们转换为字符串，我们就有了一个可以插入到 DOM 
+的字符串。
 
-Here is a simple example:
+这里是一个简单的例子：
 
 <figure>
   <img src="/images/view-guide/render-buffer.png">
 </figure>
 
-In addition to children (Strings and other `RenderBuffer`s), a `RenderBuffer` also encapsulates the element's tag name, id, classes, style, and other attributes. This makes it possible for the render process to modify one of these properties (style, for example), even after its child Strings have rendered. Because many of these properties are controlled via bindings (e.g. using `bindAttr`), this makes the process robust and transparent.
+除子节点之外（字符串和其它 `RenderBuffer` ）， `RenderBuffer` 也会封装元素标
+签名称、id、class、样式和其它属性。这使得渲染过程修改这些属性（例如样式）成
+为可能，即使在子字符串已经渲染完毕。因为这些属性的许多都可以通过绑定（例如用
+`bindAttr` ）控制，这使得渲染过程稳健且透明。
 
-#### 3. Element Creation and Insertion
+#### 3. 元素的创建和插入
 
-At the end of the rendering process, the root view asks the `RenderBuffer` for its element. The `RenderBuffer` takes its completed string and uses jQuery to convert it into an element. The view assigns that element to its `element` property and places it into the correct place in the DOM (the location specified in `appendTo` or the application's root element if the application used `append`).
+在渲染过程的最后，根视图向 `RenderBuffer` 请求它的元素。 `RenderBuffer` 获得
+它的完整字符串并用 jQuery 把它转换成一个元素。视图把那个元素分配到它的
+`element` 属性并把把它放置到 DOM 中正确的位置（ `appendTo` 指定的位置，如果
+应用使用 `append` 即是应用的根元素）。
 
-While the parent view assigns its element directly, each child views looks up its element lazily. It does this by looking for an element whose `id` matches its `elementId` property. Unless explicitly provided, the rendering process generates an `elementId` property and assigns its value to the view's `RenderBuffer`, which allows the view to find its element as needed.
+虽然父视图直接分配它的元素，但每个子视图惰性查找它的元素。它通过查找 `id` 匹
+配它的 `elementId` 属性的元素来完成这。除非显式提供，渲染过程生成一个
+`elementId` 属性比你更分配它的值给视图的 `RenderBuffer` ，`RenderBuffer` 允
+许视图按需查找它的元素。
 
-#### 4. Re-Rendering
+#### 4. 重新渲染
 
-After the view inserts itself into the DOM, either Ember or the application may want to re-render the view. They can trigger a re-render by calling the `rerender` method on a view.
+在视图把自己插入到 DOM 后，Ember 和应用都会要重新渲染视图。它们可以在视图上
+调用 `rerender` 方法来出发一次重渲染。
 
-Rerendering will repeat steps 2 and 3 above, with two exceptions:
+重新渲染会重复上面的步骤 2 和步骤 3，有两点例外：
 
-* Instead of inserting the element into an explicitly specified location, `rerender` replaces the existing element with the new element.
-* In addition to rendering a new element, it also removes the old element and destroys its children. This allows Ember to automatically handle unregistering appropriate bindings and observers when re-rendering a view. This makes observers on a path more viable, because the process of registering and unregistering all of the nested observers is automatic.
+* `rerender` 用新元素替换已有的元素，而不是把元素插入到显式定义的位置。
+* 除了渲染新元素，它也删除旧元素并销毁它的子元素。这允许 Ember 在重新渲染视
+图时自动处理撤销合适的绑定和观察者。这使得路径上的观察者可行，因为注册和撤销
+注册所有的嵌套观察者都是自动的。
 
-The most common cause of a view re-render is when the value bound to a Handlebars expression (`{{foo}}`) changes. Internally, Ember creates a simple view for each expression, and registers an observer on the path. When the path changes, Ember updates the area of the DOM with the new value.
+最常见的导致视图重新渲染的原因是当绑定到 Handlebars 表达式（ `{{foo}}` ）变
+更。Ember 内部为每个表达式创建一个简单的视图，并且在路径上注册一个观察者。当
+路径变更时，Ember 用新值更新那个区域的 DOM。
 
-Another common case is an `{{#if}}` or `{{#with}}` block. When rendering a template, Ember creates a virtual view for these block helpers. These virtual views do not appear in the publicly available view hierarchy (when getting `parentView` and `childViews` from a view), but they exist to enable consistent re-rendering.
+另一个常见的情况是一个 `{{#if}}` 或 `{{#with}}` 块。当渲染一个模板时，Ember
+为这些块辅助标创建虚拟的视图。这些虚拟的视图不会出现在公共可访问的视图层级里
+（当从视图获取 `parentView` 和 `childViews` 时），但它们的存在启用了一致的重
+渲染。
 
-When the path passed to an `{{#if}}` or `{{#with}}` changes, Ember automatically re-renders the virtual view, which will replace its contents, and importantly, destroy all child views to free up their memory.
+当传递到 `{{#if}}` 或 `{{#with}}` 的路径变更，Ember 自动重新渲染虚拟视图替换
+它的内容，重要的是，也会销毁所有的子视图来释放内存。
 
-In addition to these cases, the application may sometimes want to explicitly re-render a view (usually a `ContainerView`, see below). In this case, the application can call `rerender` directly, and Ember will queue up a re-rendering job, with the same semantics.
+除了这些情景，应用有时也会要显式地重新渲染视图（通常是一个
+`ContainerView` ，见下）。在这种情况下，应用可以直接调用 `rerender` ，且
+Ember 会把一项重渲染工作加入队列，用相同的语义元素。
 
-The process looks something like:
+这个过程像是这样：
 
 <figure>
   <img src="/images/view-guide/re-render.png">
 </figure>
 
-## The View Hierarchy
+## 视图层级
 
-### Parent and Child Views
+### 父与子
 
-As Ember renders a templated view, it will generate a view hierarchy. Let's assume we have a template `form`.
+当 Ember 渲染一个模板化的视图，它会生成一个视图层级。让我们假设已有一个模板
+`form` 。
 
 ```handlebars
 {{view App.Search placeholder="Search"}}
 {{#view Ember.Button}}Go!{{/view}}
 ```
 
-And we insert it into the DOM like this:
+然后我们像这样把它插入到 DOM 中：
 
 ```javascript
 var view = Ember.View.create({
@@ -154,41 +225,42 @@ var view = Ember.View.create({
 }).append();
 ```
 
-This will create a small view hierarchy that looks like this:
+这会创建一个如下小巧的视图等级：
 
 <figure>
   <img src="/images/view-guide/simple-view-hierarchy.png">
 </figure>
 
-You can move around in the view hierarchy using the `parentView` and `childViews` properties.
+你可以用 `parentView` 和 `childViews` 属性在视图层级中游走。
 
 ```javascript
 var children = view.get('childViews') // [ <App.Search>, <Ember.Button> ]
-children.objectAt(0).get('parentView') // view
+children.objectAt(0).get('parentView') // 视图
 ```
 
-One common use of the `parentView` method is inside of an instance of a child view.
+一个常见的 `parentView` 使用方法是在子视图的实例里。
 
 ```javascript
 App.Search = Ember.View.extend({
   didInsertElement: function() {
-    // this.get('parentView') in here references `view`
+    // this.get('parentView') 指向 `view`
   }
 })
 ```
 
-### Lifecycle Hooks
+### 生命周期钩子
 
-In order to make it easy to take action at different points during your view's lifecycle, there are several hooks you can implement.
+为了容易地在视图的生命周期的不同点上执行行为，有若干你可以实现的钩子。
 
-* `willInsertElement`: This hook is called after the view has been rendered but before it has been inserted into the DOM. It does not provide access to the view's `element`.
-* `didInsertElement`: This hook is called immediately after the view has been inserted into the DOM. It provides access to the view's `element` and is most useful for integration with an external library. Any explicit DOM setup code should be limited to this hook.
-* `willDestroyElement`: This hook is called immediately before the element is removed from the DOM. This is your opportunity to tear down any external state associated with the DOM node. Like `didInsertElement`, it is most useful for integration with external libraries.
-* `willRerender`: This hook is called immediately before a view is re-rendered. This is useful if you want to perform some teardown immediately before a view is re-rendered.
-* `becameVisible`: This hook is called after a view's `isVisible` property, or one of its ancestor's `isVisible` property, changes to true and the associated element becomes visible. Note that this hook is only reliable if all visibility is routed through the `isVisible` property.
-* `becameHidden`: This hook is called after a view's `isVisible` property, or one of its ancestor's `isVisible` property, changes to false and the associated element becomes hidden. Note that this hook is only reliable if all visibility is routed through the `isVisible` property.
+* `willInsertElement`: 这个钩子在视图渲染后插入 DOM 之前调用。它不提供对视图的 `element` 的访问。
+* `didInsertElement`: 这个钩子在视图被插入到 DOM 后立即调用。它提供到视图的 `element` 的访问，且对集成到外部库非常有用。任何显式的 DOM 设置代码应限于这个钩子。
+* `willDestroyElement`: 这个钩子在元素从 DOM 移除前立即调用。这提供了销毁任何与 DOM 节点关联的外部状态的机会。像 `didInsertElement` 一样，它对于集成外部库非常有用。
+* `willRerender`: 这个钩子在视图被重新渲染前立即调用。如果你想要在视图被重新渲染前执行一些销毁操作，这会很有用。
+* `becameVisible`: 这个钩子在视图的 `isVisible` 或它的祖先之一的 `isVisible`变为真值，且关联的元素也变为可见后调用。注意这个钩子只在所有可见性由 `isVisible` 属性控制的时候可靠。
+* `becameHidden`: 这个钩子在视图的 `isVisible` 或它的祖先之一的 `isVisible`变为假值，且关联的元素也变为隐藏后调用。注意这个钩子只在所有可见性由 `isVisible` 属性控制的时候可靠。
 
-Apps can implement these hooks by defining a method by the hook's name on the view. Alternatively, it is possible to register a listener for the hook on a view:
+应用可以通过在视图上定义一个与钩子同名的方法来实现钩子。或者，在视图上为钩子
+注册一个监听器也是可行的。
 
 ```javascript
 view.on('willRerender', function() {

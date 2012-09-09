@@ -1,10 +1,10 @@
-## Ember Website
+## Ember 网站
 
-The website for the Ember.js project.
+Ember.js 项目的网站
 
-### Contributing
+### 贡献
 
-To get started:
+由此开始：
 
 ```
 git clone git://github.com/emberjs/website.git
@@ -13,11 +13,11 @@ bundle
 bundle exec middleman
 ```
 
-Then visit [http://localhost:4567/](http://localhost:4567/)
+然后访问 [http://localhost:4567/](http://localhost:4567/)
 
-### Examples
+### 示例
 
-The example apps are kept in a separate repository at [https://github.com/emberjs/examples](https://github.com/emberjs/examples).
-To get the most up-to-date version of them, run `rake examples:update`
-from the command line. This step is automatically done when you do a
-build.
+应用实例被存放到一个单独的仓库中，在
+[https://github.com/emberjs/examples](https://github.com/emberjs/examples)。
+要获取最新版本的示例，从命令行运行 `rake examples:update` 。这个步骤会在你
+编译的时候自动完成。
