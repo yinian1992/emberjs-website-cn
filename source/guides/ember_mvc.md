@@ -1,48 +1,73 @@
 # Ember.js MVC
 
-The Ember.js framework uses a model-view-controller (MVC) pattern of application architecture. Many other frameworks and platforms also use this pattern, so you may have heard of it before. Although the concepts are consistent across platforms, the implementation can vary heavily. Therefore, it is important to understand how Ember.js's MVC implementation differs from what you may be familiar with.
+Ember.js 框架使用模型-视图-控制器（MVC）模式的应用架构。许多其它框架和平台也
+使用这个模式，所以你可能会听说过。虽然这些概念一直是跨平台的，但实现可能会有
+相当大的差异。因此，理解 Ember.js 的 MVC 实现与你熟悉的 MVC 实现有何不同是很
+重要的。
 
-### MVC Basics
+### MVC 基础
 
-The purpose of the MVC pattern is to separate key concerns so that objects can more easily be tested, maintained, and reused.
-
-The *model* is where most application data is kept. Models are generally specified in advance, using a schema or some other type of template in order to formalize and optimize data storage and retrieval. It is often implemented in the form of a data type, class, or database table. An example of a model would be a `User`, which is made up of `username` and `password` string fields. Many `User` objects can be created and stored, and they are usually not responsible for any application logic.
-
-The *view* describes the presentation of various application components&mdash;usually parts of the *model*. Views are how a user sees and interacts with an application. They can be subject to whatever styling is possible in the given system, and hold no permanent state. There are many markup languages (e.g. HTML/CSS) and templating languages (e.g. Handlebars) with which views can be written. An example of a view would be a User edit page template that contains the code which handles the creation and styling of label and editing fields.
-
-The *controller* acts as the link between *models* and *views*. It provides the business logic of the application, receiving input from the views and performing CRUD operations on the models. A controller would manage taking the username and password from a view object, comparing them to a model object, and replacing the current view with the next to show a logged-in state (or perhaps something else).
+MVC 模式的目的是分离出关键问题，这样，对象的测试、维护和重用会更容易。
 
 
-### Ember.js Implementation
+*模型* 是存放最多应用数据的地方。模型通常是预先指定的，用模式或其它类型的模
+板来形式化和优化数据存储和检索。它通常被实现为一个数据类型、类或是数据库表的
+形式。一个木星的例子可以是一个 `User` ，它由 `username` 和 `password` 两个字
+符串字段构成。可以创建并存储许多 `User` 对象，并且它们通常不负责任何应用逻辑
+。
 
-Ember provides various objects to lay the foundation for easily implementing MVC functionality. For instance:
+*视图* 描述各种各样应用组件（通常是 *模型* 的一部分）的表现。视图是用户能看
+得见并与应用交互的部分。它们可以服从给定系统中任何可行的样式化，并且不保持永
+久的状态。有许多标记语言（比如 HTML/CSS）和模板语言（比如 Handlebars）可用于
+编写视图。视图的一个例子可以是一个用户编辑页面的模板，它包含处理创建并样式化
+标签和编辑用字段的代码。
 
-* DS.Model lets you describe your application's data structure, including relationships between models.
-* Ember.View encapsulates templates of HTML, letting you write reusable and maintainable views for your application.
-* Ember.ArrayController makes it easy to manage lists of objects, with convenience methods for iterating through the contents.
-* Ember.js also adds a new piece of important architecture: A state manager which can mediate between the views, controllers, and data store. It can act as a map of your application and handle transitions as a user moves through it.
+*控制器* 承担连接起 *模型* 和 *视图* 的任务。它提供应用的业务逻辑，从视图中
+接受输入并在模型上执行 CRUD 操作。一个控制器会从视图对象中提取用户名和密码，
+并与模型对象比较它们，用下一个显示登入状态的视图（也可能是别的什么）替换当前
+的视图。
 
-All of these objects descend from Ember.Object, which provides great features like binding support, observers, computed properties, and subclassing.
+### Ember.js 实现
+
+Ember 提供了多种对象来奠定轻松实现 MVC 功能的基础。例如：
 
 
-### Differences from Ruby on Rails
+* `DS.Model` 允许你描述你的应用的数据结构，包括模型之间的关系。
+* `Ember.View` 封装 HTML 模板，让你写出可重用、易于维护的应用视图。
+* `Ember.ArrayController` 使得管理对象列表易如反掌，提供了在内容中迭代的便利方法。
+* Ember.js 也添加了一种重要的新架构：一个可以在视图、控制器和数据存储间调停
+的状态管理器。它可以作为你的应用的映射，并把转换处理为一个用户经过它。
 
-A common misconception about Ember.js's MVC implementation is that it must be similar to that of Ruby on Rails. This is incorrect. 
+所有这些对象都继承自 `Ember.Object` ，它提供了诸如绑定支持、观察者、计算属性
+和继承这样的绝妙特性。
 
-The reason for this difference is due to Ruby on Rails being a server-side framework, whereas Ember is a client-side framework.[1]
+### 与 Ruby on Rails 的区别
 
-Ember runs in the browser, so it can detect and respond to browser events such as mouse clicks, finger taps, scrolling, key presses, etc. The view objects that receive these events can then send them to controller objects, which can work with the data model to save changes. Everything happens client-side, in the browser, and ember-data takes care of sending and receiving appropriate data to and from the server API.
+一个很普遍的误解就是 Ember.js 的 MVC 实现一定与 Ruby on Rails 的相似。这是不
+正确的。
+
+这个区别的原因就是 Ruby on Rails 是一个服务端框架，而 Ember 是一个客户端框架
+。<sup>[1]</sup>
+
+Ember 在浏览器中运行，所以它可以检测并相应浏览器事件，诸如鼠标点击、手指点
+击、滚动、按键等等。接收这些事件的视图对象可以把它们呈递给控制器对象，而控制
+器对象可以作用于数据模型来保存变更。客户端发生的一切都在浏览器中，并且
+ember-data 关注发送或接受去往或来自服务器 API 的合适数据。
 
 <figure>
   <img alt="Ember.js MVC Diagram" src="/images/ember_mvc/embermvc.png">
 </figure>
 
-Rails, on the other hand, runs on the server. As such, it can only communicate with the client through HTTP requests. Rather than receive direct user events, the server takes HTTP requests as input (GET /, POST /user/1, etc.), reads the route and maps it to a controller action. The controller then interacts with the model and the view templates to construct a response (usually in the form of an HTML document) to send back over HTTP. The user is always interacting with what is basically a flat page, assembled on demand for them based on their requests.
+另一方面，Rails 运行在服务器上。照此，它只能通过 HTTP 请求与客户端通信。服务
+器接受 HTTP 请求作为输入（GET /、POST /user/1 等等），读取路由并把它映射到控
+制器行为，而不是直接从用户接收事件。控制器之后会用模型和视图模板来构造一个响
+应（通常是一个 HTML 文档形式的）来用 HTTP 返回。用户总是与一个基本上扁平，基于用户请求的要求组合的页面交互。
 
 <figure>
   <img alt="Rails MVC Diagram" src="/images/ember_mvc/railsmvc.png">
 </figure>
 
-It is important to keep this difference in mind when architecting your applications. 
+在构建你的应用程序架构时，牢记这些差异是很重要的。
 
-[1] Although it is possible to use Ember.js on the server side, that is beyond the scope of this guide.
+<sup>[1]</sup> 虽然在服务器端运行 Ember.js 是可行的，但这超出了本指导的范
+畴。
