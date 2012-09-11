@@ -1,11 +1,11 @@
 ember_mvc: 
   name: "Ember MVC"
 view_layer:
-  name: "Understanding the Ember.js view layer"
+  name: "理解 Ember.js 视图层"
 outlets:
-  name: "Ember Application Structure"
+  name: "Ember 应用结构"
 asynchrony:
-  name: "Asynchronous Behavior in Ember"
+  name: "Ember 中的异步行为"
 ember-data-lifecycle:
-  name: "Ember Data Record Lifecycle"
+  name: "Ember 数据记录生命周期"
   hidden: true

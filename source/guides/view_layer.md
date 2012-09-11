@@ -268,54 +268,49 @@ view.on('willRerender', function() {
 });
 ```
 
-### Virtual Views
+### 虚拟视图
 
-As described above, Handlebars creates views in the view hierarchy to
-represent bound values. Every time you use a Handlebars expression,
-whether it's a simple value or a block helper like `{{#with}}` or
-`{{#if}}`, Handlebars creates a new view.
+正如上文所述，Handlebars 在视图层级内创建视图来表现绑定值。每次你使用
+Handlebars 表达式，无论是一个简单值还是一个诸如 `{{#with}}` 或 `{{#if}}` 的
+块表达式，Handlebars 会创建一个新视图。
 
-Because Ember uses these views for internal bookkeeping only,
-they are hidden from the view's public `parentView` and `childViews`
-API. The public view hierarchy reflects only views created using the
-`{{view}}` helper or through `ContainerView` (see below).
+因为 Ember 只把这些视图用于内部簿记，它们对于视图的公共 `parentView`
+和 `childViews` API 是隐藏的。公共视图层级只反射用 `{{view}}` 辅助标记或通过
+`ContainerView` 创建的视图（见下）。
 
-For example, consider the following Handlebars template:
+例如，考虑下面的 Handlebars 模板：
 
 ```
 <h1>Joe's Lamprey Shack</h1>
 {{controller.restaurantHours}}
 
 {{#view App.FDAContactForm}}
-  If you are experiencing discomfort from eating at Joe's Lamprey Shack,
-please use the form below to submit a complaint to the FDA.
+  如果你在乔的七鳃鳗小屋用餐后不适，请用下面的表格向 FDA 提交申诉。
 
   {{#if controller.allowComplaints}}
     {{view Ember.TextArea valueBinding="controller.complaint"}}
-    <button {{action submitComplaint}}>Submit</button>
+    <button {{action submitComplaint}}>提交</button>
   {{/if}}
 {{/view}}
 ```
 
-Rendering this template would create a hierarchy like this:
+渲染这个模板会创建这样的层级：
 
 <figure>
   <img src="/images/view-guide/public-view-hierarchy.png">
 </figure>
 
-Behind the scenes, Ember tracks additional virtual views for the
-Handlebars expressions:
+幕后，Ember 跟踪为 Handlebars 表达式创建的额外的虚拟视图：
 
 <figure>
   <img src="/images/view-guide/virtual-view-hierarchy.png">
 </figure>
 
-From inside of the `TextArea`, the `parentView` would point to the
-`FDAContactForm` and the `FDAContactForm`'s `childViews` would be an
-array of the single `TextArea` view.
+在 `TextArea` 中， `parentView` 不会指向 `FDAContactForm` ，并且
+`FDAContactForm` 的 `childViews` 会是一个只包含 `TextArea` 的数组。
 
-You can see the internal view hierarchy by asking for the `_parentView`
-or `_childViews`, which will include virtual views:
+你可以通过 `_parentView` 和 `_childViews` 来查看内部视图层级，这会包含虚拟视
+图：
 
 ```javascript
 var _childViews = view.get('_childViews');
@@ -323,26 +318,22 @@ console.log(_childViews.objectAt(0).toString());
 //> <Ember._HandlebarsBoundView:ember1234>
 ```
 
-**Warning!** You may not rely on these internal APIs in application code.
-They may change at any time and have no public contract. The return
-value may not be observable or bindable. It may not be an Ember object.
-If you feel the need to use them, please contact us so we can expose a better 
-public API for your use-case.
+**警告！** 你不应该在应用代码中依赖于这些内部 API。它们会在任何时候更改并且
+没有任何公共合约。返回值也不能被观察或被绑定。它可能不是 Ember 对象。如果觉
+得有使用它们的需求，请联系我们，这样我们可以为你的使用需求暴露一个更好的公共
+API。
 
-Bottom line: This API is like XML. If you think you have a use for it,
-you may not yet understand the problem enough. Reconsider!
+底线：这个 API 就像是 XML。如果你觉得你需要用到它，那么你很可能没有足够理解
+问题。三思！
 
-### Event Bubbling
+### 事件冒泡
 
-One responsibility of views is to respond to primitive user events
-and translate them into events that have semantic meaning for your
-application.
+视图的一个任务是响应原始用户事件并把它们翻译成对你应用而言有语义的事件。
 
-For example, a delete button translates the primitive `click` event into
-the application-specific "remove this item from an array."
+例如，一个删除按钮把原始的 `click` 事件翻译成应用特定的“把这个元素从数组中删
+除”。
 
-In order to respond to user events, create a new view subclass that
-implements that event as a method:
+为了响应用户事件，创建一个视图的子类来把事件实现为方法：
 
 ```javascript
 App.DeleteButton = Ember.View.create({
@@ -355,25 +346,20 @@ App.DeleteButton = Ember.View.create({
 });
 ```
 
-When you create a new `Ember.Application` instance, it registers an event
-handler for each native browser event using jQuery's event delegation
-API. When the user triggers an event, the application's event dispatcher
-will find the view nearest to the event target that implements the
-event.
+当你创建一个新的 `Ember.Application` 实例，它用 jQuery 的事件委派 API 给每个
+原生浏览器事件注册一个事件处理器。当用户触发一个事件，应用事件分配器会找出离
+事件最近的视图并实现那个事件。
 
-A view implements an event by defining a method corresponding to the
-event name. When the event name is made up of multiple words (like
-`mouseup`) the method name should be the camelized form of the event
-name (`mouseUp`).
+一个视图通过定义与事件同名的方法来实现事件。当事件名称由多个词组成（如
+`mouseup` ）方法名会用 Camel 命名法把事件名作为方法名（ `mousUp` ）。
 
-Events will bubble up the view hierarchy until the event reaches the
-root view. An event handler can stop propagation using the same
-techniques as normal jQuery event handlers:
+事件会在视图层级中冒泡，直到事件到达根视图。一个事件处理器可以用与常规
+jQuery 事件处理器相同的技术来停止事件传播：
 
-* `return false` from the method
+* 在视图中 `return false`
 * `event.stopPropagation`
 
-For example, imagine you defined the following view classes:
+例如，假设你已经定义了如下的视图类：
 
 ```javascript
 App.GrandparentView = Ember.View.extend({
@@ -396,44 +382,40 @@ App.ChildView = Ember.View.extend({
 });
 ```
 
-And here's the Handlebars template that uses them:
+这是使用它们的 Handlebars 模板。
 
 ```
 {{#view App.GrandparentView}}
   {{#view App.ParentView}}
     {{#view App.ChildView}}
-      <h1>Click me!</h1>
+      <h1>点击这里！</h1>
     {{/view}}
   {{/view}}
 {{/view}}
 ```
 
-If you clicked on the `<h1>`, you'd see the following output in your
-browser's console:
+如果你点击 `<h1>` ，你会在浏览器控制台里看见下面的输出：
 
 ```
 Child!
 Parent!
 ```
 
-You can see that Ember invokes the handler on the child-most view that
-received the event. The event continues to bubble to the `ParentView`,
-but does not reach the `GrandparentView` because `ParentView` returns
-false from its event handler.
+你可以看出 Ember 在接受事件的最深层级视图上调用了处理器。事件继续上浮到
+`ParentView` ，但不会到达 `GrandparentView` 因为 `ParentView` 从它的事件处理
+器中返回了 `false` 。
 
-You can use normal event bubbling techniques to implement familiar
-patterns. For example, you could implement a `FormView` that defines a
-`submit` method. Because the browser triggers the `submit` event when
-the user hits enter in a text field, defining a `submit` method on the
-form view will "just work".
+你可以使用常规事件冒泡技术来实现常见的模式。例如，你可以实现一个带有
+`submit` 方法的 `FormView` 。因为浏览器在用户向文本域输入回车的时候会触发
+`submit` 事件，在表单视图上定义一个 `submit` 方法会“刚好完成任务”。
 
 ```javascript
 App.FormView = Ember.View.extend({
   tagName: "form",
 
   submit: function(event) {
-    // will be invoked whenever the user triggers
-    // the browser's `submit` method
+    // 会在任何用户触发浏览器的
+    // `submit` 方法时被调用
   }
 });
 ```
@@ -442,18 +424,17 @@ App.FormView = Ember.View.extend({
 {{#view App.FormView}}
   {{view Ember.TextFieldView valueBinding="controller.firstName"}}
   {{view Ember.TextFieldView valueBinding="controller.lastName"}}
-  <button type="submit">Done</button>
+  <button type="submit">确定</button>
 {{/view}}
 ```
 
-### Adding New Events
+### 添加新事件
 
-Ember comes with built-in support for the following native browser
-events:
+Ember 内置了如下原生浏览器事件的支持：
 
 <table class="figure">
   <thead>
-    <tr><th>Event Name</th><th>Method Name</th></tr>
+    <tr><th>事件名</th><th>方法名</th></tr>
   </thead>
   <tbody>
     <tr><td>touchstart</td><td>touchStart</td></tr>
@@ -473,7 +454,7 @@ events:
 </table>
 <table class="figure">
   <thead>
-    <tr><th>Event Name</th><th>Method Name</th></tr>
+    <tr><th>事件名</th><th>方法名</th></tr>
   </thead>
   <tbody>
     <tr><td>focusin</td><td>focusIn</td></tr>
@@ -492,80 +473,64 @@ events:
   </tbody>
 </table>
 
-You can add additional events to the event dispatcher when you create a
-new application:
+当你创建一个新应用时，你可以向事件分配器添加额外的事件：
 
 ```javascript
 App = Ember.Application.create({
   customEvents: {
-    // add support for the loadedmetadata media
-    // player event
+    // 添加 loadedmetadata 媒体播放器事件
     'loadedmetadata': "loadedMetadata"
   }
 });
 ```
 
-In order for this to work for a custom event, the HTML5 spec must define
-the event as "bubbling", or jQuery must have provided an event
-delegation shim for the event.
+要使这能对自定义事件奏效，HTML5 规范必须定义事件为“bubbling”，否则 jQuery 必
+须为这个事件提供一个事件委派折中方案。
 
-## Templated Views
+## 模板化视图
 
-As you've seen so far in this guide, the majority of views that you will
-use in your application are backed by a template. When using templates,
-you do not need to programmatically create your view hierarchy because
-the template creates it for you.
+如同迄今你在本指导中所见，你在应用中会用的大多数视图是依靠模板的。当使用模板
+时，你不需要编写你的视图层级，因为模板会为你创建它。
 
-While rendering, the view's template can append views to its child views
-array. Internally, the template's `{{view}}` helper calls the view's
-`appendChild` method.
+渲染时，视图模板可以把视图附加到它的子视图数组中。模板的 `{{view}}` 辅助标记
+内部会调用视图的 `appendChild` 方法。
 
-Calling `appendChild` does two things:
+调用 `appendChild` 会做两件事：
 
-1. Adds the child view to the `childViews` array.
-2. Immediately renders the child view and adds it to the parent's render
-   buffer.
+1. 把视图添加到 `childViews` 数组。
+2. 立即渲染子视图并把它添加到父视图的渲染缓冲区。
 
 <figure>
   <img src="/images/view-guide/template-appendChild-interaction.png">
 </figure>
 
-You may not call `appendChild` on a view after it has left the rendering
-state. A template renders "mixed content" (both views and plain text) so
-the parent view does not know exactly where to insert the new child view
-once the rendering process has completed.
+你不应该在视图离开渲染状态后调用 `appendChild` 。模板渲染出“混合内容”（包含
+视图和纯文本），所以当渲染过程完成后，父视图不知道到底把新的子视图插入到哪
+里。
 
-In the example above, imagine trying to insert a new view inside of
-the parent view's `childViews` array. Should it go immediately
-after the closing `</div>` of `App.MyView`? Or should it go after the
-closing `</div>` of the entire view? There is no good answer that will
-always be correct.
+在上例中，想象试图把一个新视图插入到父视图的 `childViews` 数组中。它应该立即
+放在 `App.MyView` 的闭合标签 `</div>` 后？还是在整个视图的闭合标签 `</div>`
+后？这个答案不总是正确的。
 
-Because of this ambiguity, the only way to create a view hierarchy using
-templates is via the `{{view}}` helper, which always inserts views
-in the right place relative to any plain text.
+因为这种含糊性，创建视图层级的唯一方法就是用模板的 `{{view}}` 辅助标记，它总
+是把视图插入到相对任何纯文本的正确位置。
 
-While this works for most situations, occasionally you may want to have
-direct, programmatic control of a view's children. In that case, you can
-use `Ember.ContainerView`, which explicitly exposes a public API for
-doing so.
+虽然这个机制对大多数情景奏效，偶尔你也会想要直接程序控制一个视图的子视图。在
+这种情况下，你可以用 `Ember.ContainerView` ，它显式地暴露了实现此目的的
+API。
 
-## Container Views
+## 容器视图
 
-Container views contain no plain text. They are composed entirely of
-their child views (which may themselves be template-backed).
+容器视图不包含纯文本。它们完全由子视图（可能依靠模板）构成。
 
-`ContainerView` exposes two public APIs for changing its contents:
+`ContainerView` 暴露两个用于修改本身内容的公共 API：
 
-1. A writable `childViews` array into which you can insert `Ember.View`
-   instances.
-2. A `currentView` property that, when set, inserts the new value into
-   the child views array. If there was a previous value of
-   `currentView`, it is removed from the `childViews` array.
+1. 一个可写的 `childViews` 数组，你可以把 `Ember.View` 实例插入到其中。
+2. 一个 `currentView` 属性，设置时会把新值插入到子视图数组。如果存在早先的
+   `currentView` 值，它会被从 `childViews` 数组删除。
 
-Here is an example of using the `childViews` API to create a view that
-starts with a hypothetical `DescriptionView` and can add a new button at
-any time by calling the `addButton` method:
+这里是一个用 `childViews` API 创建新视图的例子，由假想的 `DescriptionView`
+开始，并可以在任何时候用 `addButton` 方法添加一个新按钮：
 
 ```javascript
 App.ToolbarView = Ember.ContainerView.create({
@@ -588,10 +553,8 @@ App.ToolbarView = Ember.ContainerView.create({
 });
 ```
 
-As you can see in the example above, we initialize the `ContainerView`
-with two views, and can add additional views during runtime. There is a
-convenient shorthand for doing this view setup without having to
-override the `init` method:
+如你在上例中所见，我们以两个视图初始化 `ContainerView` ，并且可以在运行时添
+加额外的视图。存在一个方便的捷径来设置视图，而不用覆盖 `init` 方法：
 
 ```javascript
 App.ToolbarView = Ember.ContainerView.create({
@@ -609,70 +572,57 @@ App.ToolbarView = Ember.ContainerView.create({
 });
 ```
 
-As you can see above, when using this shorthand, you specify the
-`childViews` as an array of strings. At initialization time, each of the
-strings is used as a key to look up a view instance or class. That view
-is automatically instantiated, if necessary, and added to the
-`childViews` array.
+如上，当用这个速记方法时，你把 `childViews` 指定为一个字符串数组。在初始化
+时，每个字符串会作为在查找视图实例或类的关键字。那个视图会被自动实例化，如果
+必要，会加入到 `childViews` 数组中。
 
 <figure>
   <img src="/images/view-guide/container-view-shorthand.png">
 </figure>
 
-## Template Scopes
+## 模板作用域
 
-Standard Handlebars templates have the concept of a *context*--the
-object from which expressions will be looked up.
+标准的 Handlebars 模板有 *上下文* 的概念——出自哪个表达式的对象可以被查找到。
 
-Some helpers, like `{{#with}}`, change the context inside their block.
-Others, like `{{#if}}`, preserve the context. These are called
-"context-preserving helpers."
+一些辅助标记，比如 `{{#with}}` ，在其块内修改了上下文。领一下，比如
+`{{#if}}` ，会保持上下文。这些辅助标记被叫做“上下文保持辅助标记”。
 
-When a Handlebars template in an Ember app uses an expression
-(`{{#if foo.bar}}`), Ember will automatically set up an
-observer for that path on the current context.
+当一个 Ember 应用中的 Handlebars 模板使用了一个表达式（ `{{#if foo.bar}}`
+），Ember 会自动为当前上下文上的路径设置一个观察者。
 
-If the object referenced by the path changes, Ember will automatically
-re-render the block with the appropriate context. In the case of a
-context-preserving helper, Ember will re-use the original context when
-re-rendering the block. Otherwise, Ember will use the new value of the
-path as the context.
+如果这个路径引用的对象有变更，Ember 会自动重新以合适的上下文自动重新渲染。在
+上下文保持辅助变量的情况下，Ember 会在重新渲染块时重用原始的上下文。否则，
+Ember 会使用路径引用的新值作为上下文。
 
 ```
 {{#if controller.isAuthenticated}}
-  <h1>Welcome {{controller.name}}</h1>
+  <h1>欢迎 {{controller.name}}</h1>
 {{/if}}
 
 {{#with controller.user}}
-  <p>You have {{notificationCount}} notifications.</p>
+  <p>你有 {{notificationCount}} 条通知。</p>
 {{/with}}
 ```
 
-In the above template, when the `isAuthenticated` property changes from
-false to true, Ember will render the block, using the original outer
-scope as its context.
+在上面的模板中，当 `isAuthenticated` 属性从 `false` 变为 `true` 时，Ember 会
+重新渲染这个块，用原始的外部作用域作为它的上下文。
 
-The `{{#with}}` helper changes the context of its block to the `user`
-property on the current controller. When the `user` property changes,
-Ember re-renders the block, using the new value of `controller.user` as
-its context.
+`{{#with}}` 辅助标记把它的块的上下文修改为当前控制器的 `user` 属性。当
+`user` 属性被修改。Ember 重新渲染块，并用 `controller.user` 的新值作为它的上
+下文。
 
-### View Scope
+### 视图作用域
 
-In addition to the Handlebars context, templates in Ember also have the
-notion of the current view. No matter what the current context is, the
-`view` property always references the closest view.
+除了 Handlebars 上下文，Ember 中的模板也有当前视图的概念。无论当前上下文是什
+么， `view` 属性总是引用到最近的视图。
 
-Note that the `view` property never references the internal views
-created for block expressions like `{{#if}}`. This allows you to
-differentiate between Handlebars contexts, which always work the way
-they do in vanilla Handlebars, and the view hierarchy.
+注意 `view` 属性不会引用由 `{{#if}}` 之类的块表达式创建的内部视图。这允许你
+区分 Handlebars 上下文，在 Handlebars 中和在视图层级中的工作方式是一样的。
 
-Because `view` points to an `Ember.View` instance, you can access any
-properties on the view by using an expression like `view.propertyName`.
-You can get access to a view's parent using `view.parentView`.
+因为 `view` 指向一个 `Ember.View` 实例，你可以用 `view.propertyName` 之类的
+表达式访问视图上的任何属性。你可以用 `view.parentView` 访问视图的父视图。
 
-For example, imagine you had a view with the following properties:
+例如，想象你有一个带有如下属性的视图：
 
 ```javascript
 App.MenuItemView = Ember.View.create({
@@ -681,7 +631,7 @@ App.MenuItemView = Ember.View.create({
 });
 ```
 
-…and the following template:
+……和下面的模板：
 
 ```
 {{#with controller}}
@@ -689,49 +639,39 @@ App.MenuItemView = Ember.View.create({
 {{/with}}
 ```
 
-Even though the Handlebars context has changed to the current
-controller, you can still access the view's `bulletText` by referencing
-`view.bulletText`.
+尽管 Handlebars 上下文已经变为当前的控制器，你仍然可以用 `view.bulletText`
+访问视图的 `bulletText` 。
 
-## Template Variables
+## 模板变量
 
-So far in this guide, we've been handwaving around the use of the
-`controller` property in our Handlebars templates. Where does it come
-from?
+迄今为止，我们已经在 Handlebars 模板中邂逅了 `controller` 属性。它是从哪来的呢？
 
-Handlebars contexts in Ember can inherit variables from their parent
-contexts. Before Ember looks up a variable in the current context, it
-first checks in its template variables. As a template creates new
-Handlebars scope, they automatically inherit the variables from their
-parent scope.
+Ember 中的 Handlebars 上下文可以继承它们的父上下文中的变量。在 Ember 在当前
+上下文中查找变量之前，它首先检查它的模板变量。当一个视图创建了一个新的
+Handlebars 作用域，它们自动继承它们父作用域的变量。
 
-Ember defines these `view` and `controller` variables, so they are
-always found first when an expression uses the `view` or `controller`
-names.
+Ember 定义了这些 `view` 和 `controller` 变量，所以当一个表达式使用 `view` 或
+`controller` 变量名，它们总是最先被找到。
 
-As described above, Ember sets the `view` variable on the Handlebars
-context whenever a template uses the `{{#view}}` helper. Initially,
-Ember sets the `view` variable to the view rendering the template.
+如上所述，Ember 设置了 Handlebars 上下文中的 `view` 变量，无论何时模板中使用
+了 `{{#view}}` 辅助标记。起初，Ember 把 `view` 变量设置为正在渲染模板的视
+图。
 
-Ember sets the `controller` variable on the Handlebars context whenever
-a rendered view has a `controller` property. If a view has no
-`controller` property, it inherits the `controller` variable from the
-most recent view with one.
+Ember 设置了 Handlebars 上下文中的 `controller` 变量，无论已渲染的视图是否存
+在 `controller` 属性。如果视图没有 `controller` 属性，它从时间上最近的拥有该
+属性的视图上继承 `controller` 变量。
 
-### Other Variables
+### 其它变量
 
-Handlebars helpers in Ember may also specify variables. For example, the
-`{{#with controller.person as tom}}` form specifies a `tom` variable
-that descendent scopes can access. Even if a child context has a `tom`
-property, the `tom` variable will supersede it.
+Ember 中的 Handlebars 辅助标记也会指定变量。例如，
+`{{#with controller.person as tom}}` 形式指定一个 `tom` 变量，它的后代作用域
+是可访问的。即使一个子上下文有 `tom` 属性，这个 `tom` 变量会废除它。
 
-This form has one major benefit: it allows you to shorten long paths
-without losing access to the parent scope.
+这个形式的最大好处是，它允许你简写长路径，而不丧失对父作用域的访问权限。
 
-It is especially important in the `{{#each}}` helper, which provides
-the `{{#each person in people}}` form.
-In this form, descendent context have access to the `person` variable,
-but remain in the same scope as where the template invoked the `each`.
+在 `{{#each}}` 辅助标记中，提供 `{{#each person in people}}` 形式尤其重要。
+在这个形式中，后代上下文可以访问 `person` 变量，但在模板调用 `each` 的地方
+保留相同的作用域。
 
 ```
 {{#with controller.preferences}}
@@ -745,20 +685,16 @@ but remain in the same scope as where the template invoked the `each`.
 {{/with}}
 ```
 
-Note that these variables inherit through `ContainerView`s, even though
-they are not part of the Handlebars context hierarchy.
+注意这些变量继承了 `ContainerView` 中的那些，即使它们不是 Handlebars 上下文
+层级中的一部分。
 
-### Accessing Template Variables from Views
+### 从视图中访问模板变量
 
-In most cases, you will need to access these template variables from
-inside your templates. In some unusual cases, you may want to access the
-variables in-scope from your view's JavaScript code.
+在大多数情况下，你会需要从模板中访问这些模板变量。在一些不寻常的情景下，你会
+想要在视图的 JavaScript 代码中访问范围内的变量。
 
-You can do this by accessing the view's `templateVariables` property,
-which will return a JavaScript object containing the variables that were
-in scope when the view was rendered. `ContainerView`s also have access
-to this property, which references the template variables in the most
-recent template-backed view.
+你可以访问视图的 `templateVariables` 属性来达成此目的，它会返回一个包含当视
+图渲染后存在于其作用于的变量的 JavaScript 对象。 `ContainerView` 也可以访问
+这个属性，它指向时间上最近的模板依赖的视图的模板变量。
 
-At present, you may not observe or bind a path containing
-`templateVariables`.
+目前，你不能观察或绑定一个包含 `templateVariables` 的路径。
