@@ -1,57 +1,51 @@
-# Ember Application Structure
+# Ember 应用结构
 
-On a high-level, you structure an Ember application by designing a series of nested routes that correspond to nested application state. This guide will first cover the high-level concepts, and then walk you through an example.
+在高层，你通过设计一系列符合嵌套的应用状态的嵌套的路由来组织 Ember 应用。本
+指导会首先涵盖高层概念，然后用一个例子贯穿整个讲解。
 
-## Routing
+## 路由
 
-A user navigates through your application by making choices about what
-to view. For example, if you had a blog, your user might first choose
-between your Posts and your About page. In general, you want to have a
-default for this first choice (in this case, probably Posts).
+用户通过决定浏览什么来在你的应用中穿梭。例如，如果你有一个 blog，你的用户会
+首先在“关于”页面和“文章列表”间选择。一般地，你想要给这个首先的选择一个默认值
+（在这种情况下，可能是“文章列表”）。
 
-Once the user has made their first choice, they're usually not done. In
-the context of Posts, the user will eventually view an individual post
-and its comments. Inside of an individual post, they can choose between
-viewing a list of comments and a list of trackbacks.
+一旦用户做出了他们的第一次选择，他们通常没有完成。在“文章列表”的上下文中，用
+户最后会选择某篇文章和它的评论。在单篇文章页面中，他们可以在评论列表和引用通
+知列表中选择。
 
-Importantly, in all of these cases, the user is choosing what to display
-on the page. As you descend deeper into your application state, those
-choices affect smaller areas of the page.
+重要的是，在所有这些情况中，用户只是在页面上显示的东西中做选择。如果你深入应
+用的状态，这些选择只影响页面上的更小的区域。
 
-In the next section, we'll cover how you control these areas of the
-page. For now, let's look at how to structure your templates.
+在接下来的一节，我们会介绍如何控制页面上的这些区域。那么现在，让我们看看如何
+构建你的模板。
 
-When the user first enters the application, the application is on the
-screen, and it has an empty outlet that the router will control. In
-Ember, an `outlet` is an area of a template that has its child template
-determined at runtime based on user interaction.
+当用户最开始访问到应用时，应用显示在屏幕上，并且有一个空的、路由可控制的插
+座。在 Ember 中，一个 `outlet` 是模板上的一个区域，这个区域由子模板在运行时
+基于用户交互来决定。
 
 <figure>
   <img src="/images/outlet-guide/application-choice.png">
 </figure>
 
-The template for the Application (`application.handlebars`) will look
-something like this:
+应用模板（ `application.handlebars` ）看起来会是这样：
 
 ```
-<h1>My Application</h1>
+<h1>我的应用</h1>
 
 {{outlet}}
 ```
 
-By default, the router will initially enter the _list of posts_ state,
-and fill in the outlet with `posts.handlebars`. We will see later how
-this works exactly.
+默认情况下，路由起先会进入 _文章列表_ 状态，然后把插座用 `posts.handlebars`
+填充。之后我们会看到这如何确切地奏效。
 
 <figure>
   <img src="/images/outlet-guide/list-of-posts.png">
 </figure>
 
-As expected, the _list of posts_ template will render a list of posts.
-Clicking on the link for an individual post will replace the contents of
-the application's outlet with the template for an individual post.
+与期待一致， _文章列表_ 模板会渲染一个文章列表。点击单篇文章的链接会用单篇文
+章的模板来替换应用的插座中的内容。
 
-The template will look like this:
+模板看起来是这样：
 
 ```
 {{#each post in controller}}
@@ -60,19 +54,16 @@ The template will look like this:
 {{/each}}
 ```
 
-When clicking on a link for an individual post, the application will
-move into the _individual post_ state, and replace `posts.handlebars` in
-the application's outlet with `post.handlebars`.
+当点击单篇文章的连接，应用会转移到 _单篇文章_ 状态，并用 `post.handlebars`
+来替换应用插座中的 `posts.handlebars` 。
 
 <figure>
   <img src="/images/outlet-guide/individual-post.png">
 </figure>
 
-In this case, the individual post also has an outlet. In this case, the
-outlet will allow the user to choose between viewing comments or
-trackbacks.
+在这种情况下，单篇文章也可以有插座。插座会允许用户在评论和引用通知之间选择。
 
-The template for an individual post looks like this:
+单篇文章的模板看起来是这样：
 
 ```
 <h1>{{title}}</h1>
@@ -84,50 +75,40 @@ The template for an individual post looks like this:
 {{outlet}}
 ```
 
-Again, the `{{outlet}}` simply specifies that the router will make the
-decision about what to put in that area of the template.
+`{{outlet}}` 再次指定了路由来决定这个区域放置什么的模板。
 
-Because `{{outlet}}` is a feature of all templates, as you go deeper
-into the route hierarchy, each route will naturally control a smaller
-part of the page.
+因为 `{{outlet}}` 是所有模板的特性，当你深入路由层级，每个路由会自然地控制页
+面上的更小区域。
 
-## How it Works
+## 它如何工作
 
-Now that you understand the basic theory, let's take a look at how the
-router controls your outlets.
+现在你理解了基本理论，让我们看看路由是如何控制你的插座的。
 
-### Templates, Controllers, and Views
+### 模板、控制器以及视图
 
-First, for every high-level handlebars template, you will also have a
-view and a controller with the same name. For example:
+首先，对于每个高层 Handlebars 模板，你同样也会有一个同名的视图和控制器。例
+如：
 
-* `application.handlebars`: the template for the main application view
-* `App.ApplicationController`: the controller for the template. The
-  initial variable context of `application.handlebars` is an instance of
-  this controller.
-* `App.ApplicationView`: the view object for the template.
+* `application.handlebars`: 应用主视图的模板
+* `App.ApplicationController`: 上述模板的控制器。 `application.handlebars`
+  的初始变量上下文是这个控制器的一个实例
+* `App.ApplicationView`: 上述模板的视图对象
 
-In general, you will use view objects to handle events and controller
-objects to provide data to your templates.
+一般地，你会用视图对象来处理事件，并用控制器对象来向模板提供数据。
 
-Ember provides two primary kinds of controllers, `ObjectController` and
-`ArrayController`. These controllers serve as proxies for model objects
-and lists of model objects.
+Ember 提供两种基本类型的控制器， `ObjectController` 和 `ArrayController` 。
+这些控制器充当模型对象和模型对象列表的代理。
 
-We start with controllers rather than exposing the model objects
-directly to your templates so that you have someplace to put
-view-related computed properties and don't end up polluting your models
-with view concerns.
+我们以控制器开始，而不是直接向模板暴露模型对象，这样你才有余地使用视图关联的
+计算属性，并且最终视图关系不会污染你的模型。
 
-You also connect `{{outlet}}`s using the template's associated
-controller.
+你也可以用模板关联的控制器连接 `{{outlet}}` 。
 
-### The Router
+### 路由
 
-Your application's router is responsible for moving your application
-through its states in response to user action.
+应用的路由负责让应用在状态见转移来响应用户的动作。
 
-Let's start with a simple router:
+我们以一个简单的路由开始：
 
 ```javascript
 App.Router = Ember.Router.extend({
@@ -148,17 +129,15 @@ App.Router = Ember.Router.extend({
 });
 ```
 
-This router sets up three top-level states: an index state, a state that
-shows a list of posts, and a state that shows an individual post.
+这个路由设置了三个顶层的状态：一个索引页状态。一个显示文章列表的状态和一个
+显示单篇文章的状态。
 
-In our case, we'll simply redirect the index route to the `posts` state.
-In other applications, you may want to have a dedicated home page.
+在我们的案例中，我们会简单重定向索引页路由到 `posts` 状态。在其它应用中，你
+也许会需要一个独立的主页。
 
-So far, we have a list of states, and our app will dutifully enter the
-`posts` state, but it doesn't do anything. When the application enters
-the `posts` state, we want it to connect the `{{outlet}}` in the
-application template. We accomplish this using the `connectOutlets`
-callback.
+目前为止，我们已经有了一个状态列表，并且我们的应用也会尽职尽责地进入到
+`posts` 状态，但这不会做任何事。当应用进入到 `posts` 状态，我们要它连接到应
+用模板中的 `{{outlet}}` 。我们用 `connectOutlets` 回调来完成这个工作。
 
 ```javascript
 App.Router = Ember.Router.extend({
@@ -183,24 +162,22 @@ App.Router = Ember.Router.extend({
 });
 ```
 
-This connectOutlet call does a few things for us:
+`connectOutlet` 调用会为我们做这些事：
 
-* It creates a new instance of `App.PostsView`, using the
-  `posts.handlebars` template.
-* It sets the `content` property of `postsController` to a list of all
-  of the available posts (`App.Post.find()`) and makes `postController`
-  the controller for the new `App.PostsView`.
-* It connects the new view to the outlet in `application.handlebars`.
+* 它创建一个 `App.PostsView` 的新实例，使用 `posts.handlebars` 模板。
+* 它设置 `postsController` 的 `content` 属性为一个所有可用文章（
+  `App.Post.find()` ） 的列表，并让 `postsController` 作为新的
+  `App.PostsView` 的控制器。
+* 它把新视图连接到 `application.handlebars` 的插座上。
 
-In general, you should just think of these objects as operating in
-tandem. You will always provide the content for a view's controller when
-you create a view.
 
-## Transitions and URLs
+一般地，你应该值考虑这些对象为串联的操作。当你创建一个视图，你总是会为视图的
+控制器提供内容。
 
-Next, we will want to provide a way for an application in the `posts`
-state to move into the `post` state. We accomplish this by specifying a
-transition.
+## 过渡和 URL
+
+下一步，我们要为 `posts` 状态中的应用提供一种迁移到 `post` 状态的方法。我们
+通过指定一个过渡来完成这个工作。
 
 ```javascript
 posts: Ember.Route.extend({
@@ -213,8 +190,7 @@ posts: Ember.Route.extend({
 })
 ```
 
-You invoke this transition by using the `{{action}}` helper in the
-current template.
+你用当前模板中的 `{{action}}` 辅助标记调用这个过渡。
 
 ```
 {{#each post in controller}}
@@ -222,17 +198,14 @@ current template.
 {{/each}}
 ```
 
-When a user clicks on a link with an `{{action}}` helper, Ember will
-dispatch an event to the current state with the specified name. In this
-case, the event is a transition.
+当用户点击一个带有 `{{action}}` 辅助标记的链接时，Ember 会把一个事件分配到指
+定名称的当前状态。在这种情况下，事件是一个过渡。
 
-Because we used a transition, Ember was also able to generate a URL for
-this link. Ember uses the `id` property of the context to fill in the
-`:post_id` dynamic segment of the `post` state.
+因为我们使用了一个过渡，Ember 也可以为这个链接生成 URL。Ember 用上下文中的
+`id` 属性来填充 `post` 状态中的 `:post_id` 动态段。
 
-Next, we will need to implement `connectOutlets` on the `post` state.
-This time, the `connectOutlets` method will receive the post object
-specified as the context to the `{{action}}` helper.
+下一步，我们会需要在 `post` 状态上实现 `connectOutlets` 。这次，
+`connectOutlets` 方法会接受 `{{action}}` 辅助标记上下文指定的文章对象。
 
 ```javascript
 post: Ember.Route.extend({
@@ -244,36 +217,31 @@ post: Ember.Route.extend({
 })
 ```
 
-To recap, the `connectOutlet` call performs a number of steps:
+`connectOutlet` 调用执行的一系列步骤可以概括为如下：
 
-* It creates a new instance of `App.PostView`, using the
-  `post.handlebars` template.
-* It sets the `content` property of `postController` to the post that
-  the user clicked on.
-* It connects the new view to the outlet in `application.handlebars`.
+* 它用 `post.handlebars` 模板创建了一个 `App.PostView` 的新实例。
+* 它设置了用户点击的文章的 `postController` 的 `content` 属性。
+* 它把新视图连接到 `application.handlebars` 中的插座。
 
-You don't have to do anything else to get the link (`/posts/1`) to work
-if the user saves it as a bookmark and comes back to it later.
+如果用户把页面存为书签并在之后返回，你不需要任何额外的操作来让链接（ 
+`/posts/1` ） 正常工作。
 
-If the user enters the page for the first time with the URL `/posts/1`,
-the router will perform a few steps:
+如果用户第一次以 `posts/1` URL 访问页面，路由会执行这几个步骤：
 
-* Figure out what state the URL corresponds with (in this case, `post`)
-* Extract the dynamic segment (in this case `:post_id`) from the URL and
-  call `App.Post.find(post_id)`. This works using a naming convention:
-  the `:post_id` dynamic segment corresponds to `App.Post`.
-* Call `connectOutlets` with the return value of `App.Post.find`.
+* 断定 URL 符合的状态（在本例中是 `post` ）。
+* 从 URL 中解压动态段（在本例中是 `:post_id` ）并调用
+  `App.Post.find(post_id)` 。这使用一个命名约定来奏效：
+  `:post_id` 动态段对应 `App.Post` 。
+* 用 `App.Post.find` 的返回值调用 `connectOutlets` 。
 
-This means that regardless of whether the user enters the `post` state
-from another part of the page or through a URL, the router will invoke
-the `connectOutlets` method with the same object.
+这意味着不管用户是否从页面中的另一部分或是通过 URL 进入到 `post` 状态，路由
+都会以相同的对象调用 `connectOutlets` 方法。
 
-## Nesting
+## 嵌套
 
-Finally, let's implement the comments and trackbacks functionality.
+最后，让我们实现评论和引用通知功能。
 
-Because the `post` state uses the same pattern as the `root` state, it
-will look very similar.
+因为 `post` 状态使用和 `root` 状态相同的模式，它看起来非常类似。
 
 ```javascript
 post: Ember.Route.extend({
@@ -310,18 +278,17 @@ post: Ember.Route.extend({
 })
 ```
 
-There are only a few changes here:
+这里只发生了这些变化：
 
-* We specify the `showTrackbacks` and `showComments` transitions only in
-  the states where transitioning makes sense.
-* Since we are setting the view for the outlet in `post.handlebars`, we
-  call `connectOutlet` on `postController`
-* In this case, we get the content for the `commentsController` and
-  `trackbacksController` from the current post. The `postController` is
-  a proxy for the underlying Post, so we can retrieve the associations
-  directly from the `postController`.
+* 我们只在状态内指定了 `showTrackbacks` 和 `showComments` 过渡，而状态里过渡
+  才有意义。
+* 既然我们正在获取给 `post.handlebars` 使用的视图，我们调用 `postController`
+  上的 `connectOutlet`
+* 这种情况下，我们从当前文章中获取 `commentsController` 和
+  `trackbacksController` 的内容。 `postController` 是一个底层文章模型的代
+  理，所以我们可以直接用 `postController` 直接检索关联。
 
-Here's the template for an individual post.
+这是单篇文章的模板：
 
 ```
 <h1>{{title}}</h1>
@@ -331,51 +298,41 @@ Here's the template for an individual post.
 </div>
 
 <p>
-  <a {{action showComments href=true}}>Comments</a> |
-  <a {{action showTrackbacks href=true}}>Trackbacks</a>
+  <a {{action showComments href=true}}>评论</a> |
+  <a {{action showTrackbacks href=true}}>引用通知</a>
 </p>
 
 {{outlet}}
 ```
 
-And finally, coming back from a bookmarked link will work fine with this
-nested setup. Let's take a look at what happens when the user enters the
-site at `/posts/1/trackbacks`.
+最后，这个嵌套配置下，从书签链接返回页面也会正常工作。让我们看一下当用户从
+`posts/1/trackbacks` 访问站点时发生了什么。
 
-* The router determines what state the URL corresponds with
-  (`post.trackbacks`), and enters the state.
-* For each state along the way, the router extracts any dynamic segments
-  and calls `connectOutlets`. This mirrors the path a user would take as
-  they move through the application. As before, the router will call the
-  `connectOutlet` method on the post with `App.Post.find(1)`.
-* When the router gets to the trackbacks state, it will invoke
-  `connectOutlets`. Because the `connectOutlets` method for `post` has
-  set the `content` of the `postController`, the trackbacks state will
-  retrieve the association.
+* 路由决定 URL 关联的状态（ `post.trackbacks` ），然后进入状态。
+* 对经过的每个状态，路由解压任何的动态段并调用 `connectOutlets` 。这镜像了用
+  户用来在应用中浏览的路径。与之前一样，路由会在文章上以 `App.Post.find(1)`
+  的结果调用 `connectOutlet` 。
+* 当路由进入到引用通知的状态，它会调用 `connectOutlets` 。因为 `post` 的
+  `connectOutlets` 方法已经设置了 `postController` 的 `content` ，引用通知状
+  态会检索关联。
 
-Again, because of the way the `connectOutlets` callback works with
-dynamic URL segments, the URL generated by an `{{action}}` helper is
-guaranteed to work later.
+再一次，由于 `connectOutlets` 回调与动态 URL 段协同工作，由 `{{action}}` 辅
+助标记生成的 URL 会之后会保证奏效。
 
-## Asynchrony
+## 异步
 
-One final point: you might be asking yourself how this system can work
-if the app has not yet loaded Post 1 by the time `App.Post.find(1)` is
-called.
+最后一点：你会问你自己，当应用在 `App.Post.find(1)` 调用时还没有加载“文章1”
+这个系统如何正常工作。
 
-The reason this works is that `ember-data` always returns an object
-immediately, even if it needs to kick off a query. That object starts
-off with an empty `data` hash. When the server returns the data,
-ember-data updates the object's `data`, which also triggers bindings on
-all defined attributes (properties defined using `DS.attr`).
+这会奏效的原因是 `ember-data` 总是立即返回一个对象，即使它需要开启一个查询。
+那个对象以一个空的 `data` 散列值开始。当服务器返回数据， `ember-data` 更新对
+象的 `data` ，这也出发所有定义的属性（用 `DS.attr` 定义的属性）上的绑定。
 
-When you ask this object for its `trackbacks`, it will likewise return
-an empty `ManyArray`. When the server returns the associated content
-along with the post, ember-data will also automatically update the
-`trackbacks` array.
+当你要这个对象查询它的 `trackbacks` ，它也会返回一个空的 `ManyArray` 。当服
+务器一同返回文章和与之关联的内容时， `ember-data` 会自动更新 `trackbacks` 数
+组。
 
-In your `trackbacks.handlebars` template, you will have done something
-like:
+在你的 `trackbacks.handlebars` 模板中，你会做好这些：
 
 ```
 <ul>
@@ -385,11 +342,10 @@ like:
 </ul>
 ```
 
-When ember-data updates the `trackbacks` array, the change will
-propagate through the `trackbacksController` and into the DOM.
+当 `ember-data` 更新 `trackbacks` 数组，变更会通过 `trackbacksController` 传
+播至 DOM。
 
-You may also want to avoid showing partial data that is not yet loaded.
-In that case, you could do something like:
+你也会想要避免展示尚未加载的局部数据。在这种情况下，你可以这么做：
 
 ```
 <ul>
@@ -398,12 +354,11 @@ In that case, you could do something like:
     <li><a {{bindAttr href="trackback.url"}}>{{trackback.title}}</a></li>
   {{/each}}
 {{else}}
-  <li><img src="/spinner.gif"> Loading trackbacks...</li>
+  <li><img src="/spinner.gif">加载引用通知……</li>
 {{/if}}
 </ul>
 ```
 
-When ember-data populates the `ManyArray` for the trackbacks from the
-server-provided data, it also sets the `isLoaded` property. Because all
-template constructs, including `#if` automatically update the DOM if the
-underlying property changes, this will "just work".
+当 `ember-data` 用服务器提供的数据把引用通知填入到 `ManyArray` 里，它也会设
+置 `isLoaded` 属性。因为所有的包含 `#if` 的模板结构会在底层属性变化时自动更
+新 DOM，这会“恰好奏效”。
