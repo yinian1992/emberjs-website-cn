@@ -1,16 +1,13 @@
-# Managing Asynchrony in Ember
+# 在 Ember 中处理异步
 
-Many Ember concepts, like bindings and computed properties, are designed
-to help manage asynchronous behavior.
+许多 Ember 的概念，比如绑定和计算属性，其设计是为了完成异步行为的处理。
 
-## Without Ember
+## 没有 Ember 的情况
 
-We'll start by taking a look at ways to manage asynchronous behavior
-using jQuery or event-based MVC frameworks.
+我们首先来看一看用 jQuery 或基于事件的 MVC 框架如何管理异步行为。
 
-Let's use the most common asynchronous behavior in a web application,
-making an Ajax request, as an example. The browser APIs for making Ajax
-request provide an asynchronous API. jQuery's wrapper does as well:
+让我们使用一个 web 应用中最常见的异步行为——发起一个 Ajax 请求——来作为例子。
+浏览器发起 Ajax 请求的 API 提供了一个异步的 API。jQuery 包装器也可以实现：
 
 ```javascript
 jQuery.getJSON('/posts/1', function(post) {
@@ -19,13 +16,10 @@ jQuery.getJSON('/posts/1', function(post) {
 });
 ```
 
-In a raw jQuery application, you would use this callback to make
-whatever changes you needed to make to the DOM.
+在纯 jQuery 应用中，你会用这个回调来随意进行要更改到 DOM 的更改。
 
-When using an event-based MVC framework, you move the logic out of the
-callback and into model and view objects. This improves things, but
-doesn't get rid of the need to explicitly deal with asynchronous
-callbacks:
+当使用一个基于事件的 MVC 框架，会把逻辑从回调中拿出而放进模型和视图对象里。
+这改进了很多东西，但仍未摆脱显式处理异步回调的需求：
 
 ```javascript
 Post = Model.extend({
@@ -63,23 +57,18 @@ jQuery.getJSON('/posts/1', function(json) {
 });
 ```
 
-This example doesn't use any particular JavaScript library, but its
-approach is typical of event-driven MVC frameworks. It helps organize
-the asynchronous events, but asynchronous behavior is still the core
-programming model.
+这个例子没有用任何特殊的 JavaScript 库，但它的实现途径是事件驱动的 MVC 框架
+中的典型。它实现了异步事件的组织，但异步行为仍然在核心程序模型中。
 
-## Ember's Approach
+## Ember 的方法
 
-In general, Ember's goal is to eliminate explicit forms of asynchronous
-behavior. As we'll see later, this gives Ember the ability to coalesce
-multiple events that have the same result.
+总体而言，Ember 的目的是消除显式形式的异步行为。如我们之后会见到的，这给予了
+Ember 合并多个具有相同结果事件的能力。
 
-It also provides a higher level of abstraction, eliminating the need to
-manually register and unregister event listeners to perform most common
-tasks.
+它也提供了高层抽象，消灭手动注册/反注册事件监听器来执行大多数任务的需求。
 
-You would normally use ember-data for this example, but let's see how
-you would model the above example using jQuery for Ajax in Ember.
+你一般会为这个例子使用用 `ember-data` ，当让我们看看如何用 jQuery 来为 Ember
+中的 Ajax 模型化上面的例子。
 
 ```javascript
 App.Post = Ember.Object.extend({
@@ -108,29 +97,24 @@ jQuery.getJSON("/posts/1", function(json) {
 });
 ```
 
-In contrast to the above examples, the Ember approach eliminates the
-need to explicitly register an observer when the `post`'s properties
-change.
+与上面的例子相反，Ember 的实现方法消灭了当 `post` 的属性变更时显式注册观察者
+的需求。
 
-The `{{title}}`, `{{author}}` and `{{body}}` template elements are bound
-to those properties on the `PostController`. When the `PostController`'s
-content changes, it automatically propagates those changes to the DOM.
+`{{title}}` 、 `{{author}}` 和 `{{body}}` 模板元素被限定到 `PostController`
+上的那些元素中。当 `PostController` 的内容更改，它自动传播那些变更到 DOM。
 
-Using a computed property for `author` eliminated the need to explicitly
-invoke the computation in a callback when the underlying property
-changed.
+为 `author` 使用一个计算属性消灭了在底层属性变更时显式地调用回调中计算的需
+求。
 
-Instead, Ember's binding system automatically follows the trail from the
-`salutation` and `name` set in the `getJSON` callback to the computed
-property in the `PostController` and all the way into the DOM.
+除此之外，Ember 的绑定系统自动跟踪从 `getJSON` 回调中设置的 `salutation` 和
+`name` 到 `PostController` 中的计算属性，并且始终把变化传播到 DOM 中。
 
-## Benefits
+## 益处
 
-Because Ember is usually responsible for propagating changes, it can
-guarantee that a single change is only propagated one time in response
-to each user event.
+因为 Ember 经常负责传播变更，它可以保证在响应每个用户事件上一个变更只传播一
+次。
 
-Let's take another look at the `author` computed property.
+让我们再看一看 `author` 计算属性。
 
 ```javascript
 App.PostController = Ember.ObjectController.extend({
@@ -140,64 +124,49 @@ App.PostController = Ember.ObjectController.extend({
 });
 ```
 
-Because we have specified that it depends on both `salutation` and
-`name`, changes to either of those two dependencies will invalidate the
-property, which will trigger an update to the `{{author}}` property in
-the DOM.
+因为我们已经指定了它依赖于 `salutation` 和 `name` ，这两个依赖的任何一个的变
+更都会使属性无效，这会触发对 DOM 中 `{{author}}` 的更新。
 
-Imagine that in response to a user event, I do something like this:
+想象在响应一个用户事件时，我要做这些事：
 
 ```javascript
 post.set('salutation', "Mrs.");
 post.set('name', "Katz");
 ```
 
-You might imagine that these changes will cause the computed property to
-be invalidated twice, causing two updates to the DOM. And in fact, that
-is exactly what would happen when using an event-driven framework.
+你会臆断这些变更会导致计算属性被无效两次，导致更新 DOM 两次。而事实上，这在
+使用事件驱动的框架上确实会发生。
 
-In Ember, the computed property will only recompute once, and the DOM
-will only update once.
+在 Ember 中，计算属性会只重新计算一次，并且 DOM 也只会更新一次。
 
-How?
+这是如何实现的呢？
 
-When you make a change to a property in Ember, it does not immediately
-propagate that change. Instead, it invalidates any dependent properties
-immediately, but queues the actual change to happen later.
+当你对 Ember 中的一个属性做出更改，它不会立即传播变更。除此之外，它立即无效
+任何有依赖的属性，但把实际的修改放入队列来让它在之后发生。
 
-Changing both the `salutation` and `name` properties invalidates the
-`author` property twice, but the queue is smart enough to coalesce those
-changes.
+对 `salutation` 和 `name` 属性都修改会无效 `author` 属性两次，但队列会智能地
+合并那些变更。
 
-Once all of the event handlers for the current user event have finished,
-Ember flushes the queue, propagating the changes downward. In this case,
-that means that the invalidated `author` property will invalidate the
-`{{author}}` in the DOM, which will make a single request to recompute
-the information and update itself once.
+一旦所有当前用户事件的事件处理器完成，Ember 刷新队列，把变更向下传播。在这种
+情况下，这意味着被无效的 `author` 属性会无效 DOM 中的 `{{author}}` ，这会让
+单次请求只重新计算信息并更新自己一次。
 
-**This mechanism is fundamental to Ember.** In Ember, you should always
-assume that the side-effects of a change you make will happen later. By
-making that assumption, you allow Ember to coalesce repetitions of the
-same side-effect into a single call.
+**这个机制是 Ember 的根基。** 在 Ember 中，应该总是假定一个你所做变更的副作
+用会在之后发生。通过做这个假设，你允许 Ember 来合并单次调用中相同的副作用。
 
-In general, the goal of evented systems is to decouple the data
-manipulation from the side effects produced by listeners, so you
-shouldn't assume synchronous side effects even in a more event-focused
-system. The fact that side effects don't propagate immediately in Ember
-eliminates the temptation to cheat and accidentally couple code together
-that should be separate.
+总而言之，事件驱动系统的目标是从监听器产生的负效用中解耦数据操作，所以你不应
+该假定同步的副作用，即使在一个更关注事件的系统中。事实上，在 Ember 中副作用
+不会立刻传播，消除了欺骗并偶然地把应该分开的代码耦合在一起的诱因。
 
-## Side-Effect Callbacks
+## 副作用回调
 
-Since you can't rely on synchronous side-effects, you may be wondering
-how to make sure that certain actions happen at the right time.
+既然你不能依赖同步的副作用，你会好奇如何确保特定的行为在恰好的时间发生。
 
-For example, imagine that you have a view that contains a button, and
-you want to use jQuery UI to style the button. Since a view's `append`
-method, like everything else in Ember, defers its side-effects, how can
-you execute the jQuery UI code at the right time.
+例如，想象你有一个包含一个按钮的视图，并且你想用 jQuery UI 来样式化这个按
+钮。因为视图的 `append` 方法，如同 Ember 中的其它东西，推迟了它的副作用，怎
+样在正确的时间执行 jQuery UI 代码？
 
-The answer is lifecycle callbacks.
+答案是生命周期回调。
 
 ```javascript
 App.Button = Ember.View.extend({
@@ -214,46 +183,36 @@ var button = App.Button.create({
 }).appendTo('#something');
 ```
 
-In this case, as soon as the button actually appears in the DOM, Ember
-will trigger the `didInsertElement` callback, and you can do whatever
-work you want.
+这种情况下，一旦按钮真正出现在 DOM 中，Ember 会触发 `didInsertElement` 回
+调，然后你可以做任何你想要做的工作。
 
-The lifecycle callbacks approach has several benefits, even if we didn't
-have to worry about deferred insertion.
+生命周期回调方法有很多好处，即使我们并不需要担忧延迟的插入。
 
-First, relying on synchronous insertion means leaving it up to the
-caller of `appendTo` to trigger any behavior that needs to run
-immediately after appending. As your application grows, you may find
-that you create the same view in many places, and now need to worry
-about that concern everywhere.
+首先，依赖同步的插入意味着 `appendTo` 的调用者要来触发任何需要在附加元素后立
+即运行的行为。当你的应用变大后，你会发现在许多地方创建相同的视图，并且需要担
+心它对每个地方的联系。
 
-The lifecycle callback eliminates the coupling between the code that
-instantiates the view and its post-append behavior. In general, we find
-that making it impossible to rely on synchronous side-effects leads to
-better design in general.
+生命周期回调消灭了实例化视图和它的提交插入行为两部分代码的耦合。一般地，我们
+发现不依赖于同步副作用导致了整体上的优良设计。
 
-Second, because everything about the lifecycle of a view is inside the
-view itself, it is very easy for Ember to re-render parts of the DOM
-on-demand.
+第二，因为关于视图生命周期的一切都在视图本身内部，按需重渲染 DOM 的部分对
+Ember 是非常容易的。
 
-For example, if this button was inside of an `{{#if}}` block, and Ember
-needed to switch from the main branch to the `else` section, Ember can
-easily instantiate the view and call the lifecycle callbacks.
+例如，如果这个按钮在一个 `{{#if}}` 块中，并且 Ember 需要从主分支切换到
+`else` 节，Ember 可以轻易实例化视图并调用生命周期回调。
 
-Because Ember forces you to define a fully-defined view, it can take
-control of creating and inserting views in appropriate situations.
+因为 Ember 强迫你定义一个完整定义的视图，它可以控制在合适的场合创建并插入视
+图。
 
-This also means that all of the code for working with the DOM is in a
-few sanctioned parts of your application, so Ember has more freedom in
-the parts of the render process outside of these callbacks.
+这也意味着所有的与 DOM 相关的代码只在应用中封装好的几个部分，所以 Ember 在
+这些在回调之外的渲染过程中的部分有更多的自由。
 
-## Observers
+## 观察者
 
-In some rare cases, you will want to perform certain behavior after a
-property's changes have propagated. As in the previous section, Ember
-provides a mechanism to hook into the property change notifications.
+在一些罕见的情况，你会想要在属性变更已经传播之后执行特定的行为。正如前面一节
+中所述，Ember 提供了一个机制来挂钩到属性变更通知。
 
-Let's go back to our salutation example.
+让我们返回“称呼”的例子。
 
 ```javascript
 App.PostController = Ember.ObjectController.extend({
@@ -263,8 +222,8 @@ App.PostController = Ember.ObjectController.extend({
 });
 ```
 
-If we want to be notified when the author changes, we can register an
-observer. Let's say that the view object wants to be notified:
+如果我们想在作者变更时被通知，我们可以注册一个观察者。让我们表示为视图函数
+想要被通知：
 
 ```javascript
 App.PostView = Ember.View.extend({
@@ -277,19 +236,14 @@ App.PostView = Ember.View.extend({
 });
 ```
 
-Ember triggers observers after it successfully propagates the change. In
-this case, that means that Ember will only call the `authorDidChange`
-callback once in response to each user event, even if both of `salutation`
-and `name` changed.
+Ember 在它成功传播变更后触发观察者。在本例中，这意味着 Ember 会只对每个用户
+事件调用一次 `authorDidChange` ，即使 `salutation` 和 `name` 都有变更。
 
-This gives you the benefits of executing code after the property has
-changed, without forcing all property changes to be synchronous. This
-basically means that if you need to do some manual work in response to a
-change in a computed property, you get the same coalescing benefits as
-Ember's binding system.
+这为你提供了在属性变更后执行代码的便利，而不强制所有的属性变更同步。这基本上
+意味着如果你需要对一个计算属性的变更做一些手动工作，你会得到相同的合并便利，
+如同在 Ember 的绑定系统中一样。
 
-Finally, you can also register observers manually, outside of an object
-definition:
+最后，你也可以手动注册观察者，在对象定义之外：
 
 ```javascript
 App.PostView = Ember.View.extend({
@@ -304,16 +258,12 @@ App.PostView = Ember.View.extend({
 });
 ```
 
-However, when you use the object definition syntax, Ember will
-automatically tear down the observers when the object is destroyed. For
-example, if an `{{#if}}` statement changes from truthy to falsy, Ember
-destroys all of the views defined inside the block. As part of that
-process, Ember also disconnects all bindings and inline observers.
+尽管如此，当你使用对象定义语法，Ember 会自动在对象销毁时销毁观察期。例如，一
+个 `{{#if}}` 语句从真值变为假值，Ember 销毁块内定义的所有试图。作为这个过程
+的一部分，Ember 也会断开所有绑定和内联观察者。
 
-If you define an observer manually, you need to make sure you remove it.
-In general, you will want to remove observers in the opposite callback
-to when you created it. In this case, you will want to remove the
-callback in `willDestroyElement`.
+如果你手动定义了一个观察者，你需要确保移除了它。一般地，你会想要在与创建时相
+反的回调中移除观察者。在本例中，你会想要移除 `willDestroyElement` 的回调。
 
 ```javascript
 App.PostView = Ember.View.extend({
@@ -332,10 +282,7 @@ App.PostView = Ember.View.extend({
 });
 ```
 
-If you added the observer in the `init` method, you would want to tear
-it down in the `willDestroy` callback.
+如果你在 `init` 方法中添加了观察者，你会想要在 `willDestroy` 回调中销毁它。
 
-In general, you will very rarely want to register a manual observer in
-this way. Because of the memory management guarantees, we strongly
-recommend that you define your observers as part of the object
-definition if possible.
+总而言之，你会极少用这种方法注册一个手动的观察者。为了保障内存管理，我们强烈
+建议尽可能把观察者定义为对象定义的一部分。
