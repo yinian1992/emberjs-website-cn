@@ -2,7 +2,14 @@
 
 ### Handlebars
 
-Ember 捆绑了 [Handlebars](http://www.handlebarsjs.com)，一个语义化的
+Ember 支持模板来渲染视图。Ember 默认的（也是配合最好的）模板是
+[Handlebars](http://www.handlebarsjs.com)，一个语义化的的模板语言。这些模板
+看起来像是嵌入了表达式的普通 HTML。Ember 并不自带 Handlebars，但你很容易下载
+到 Handlebars 并把它包含在你的 Ember 应用中。Ember 和 Handlebars 配合非常默
+契，但你可以通过把 Ember.View 的模板属性指向一个接受 Ember.View 上下文来产生
+HTML 字符串的函数来用其它的渲染引擎替代。目前，让我们来看看 Ember 和
+Handlebars 之间极好的集成。
+
 模板语言。这些模板看起来像是嵌入了表达式的普通 HTML。
 
 你应该把 Handlebars 模板存储在应用的 HTML 文件里。在运行时，Ember 会
@@ -644,7 +651,7 @@ JavaScript 中注册一个辅助标记：
 
 ```javascript
 Handlebars.registerHelper('highlight', function(property, options) {
-  var value = Ember.Handlebars.getPath(this, property, options);
+  var value = Ember.Handlebars.get(this, property, options);
   return new Handlebars.SafeString('<span class="highlight">'+value+'</span>');
 });
 ```
@@ -665,7 +672,7 @@ Handlebars.registerHelper('highlight', function(property, options) {
 ```
 
 注意：传递给辅助标记的参数应该是变量名，而不是实际值。这允许你在值上设置观察
-者。要获取参数的实际值，像上面展示的那样使用 `Ember.getPath` 。
+者。要获取参数的实际值，像上面展示的那样使用 `Ember.get` 。
 
 ### 包含的视图
 

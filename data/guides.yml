@@ -2,6 +2,8 @@ ember_mvc:
   name: "Ember MVC"
 view_layer:
   name: "理解 Ember.js 视图层"
+router_primer:
+  name: "理解 Ember.js 路由：初级读本"
 outlets:
   name: "Ember 应用结构"
 asynchrony:
