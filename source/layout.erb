@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Ember.js 中文 - <%= data.page.title %></title>
+    <title>Ember.js 中文网站 - <%= data.page.title %></title>
     <link rel="shortcut icon" href="/images/favicon.png" />
     <%= stylesheet_link_tag "site" %>
     <%= stylesheet_link_tag "highlight" %>
@@ -87,11 +87,14 @@
     </div>
 
     <div id="footer">
-      <div class="info">
-        <div class="links"><a href="http://twitter.com/emberjs">Twitter</a> &bull; <a href="https://github.com/emberjs/ember.js">GitHub</a></div>
-        <div class="copyright">Copyright 2012 <a href="http://tilde.io">Tilde Inc.</a></div>
-        <div class="credit">Design by <a href="http://www.heropixel.com">HeroPixel</a></div>
-        <div class="translator">Translated by <a href="http://docs.torriacg.org">yinian1992</a></div>
+      <div id="footer-wrapper">
+          <div class="info">Copyright 2012 <a href="http://tilde.io">Tilde Inc.</a><br>Design by <a href="http://www.heropixel.com">HeroPixel</a><br>Translated by <a href="http://docs.torriacg.org">yinian1992</a></div>
+        <div class="statement">Ember.Js 是免费、开源的，以后也一直是。</div>
+        <div class="links">
+          <a class="twitter" href="http://twitter.com/emberjs">Twitter</a>
+          <a class="github" href="https://github.com/emberjs/ember.js">GitHub</a>
+          <%# <a class="googleplus" href="#">Google+</a> %>
+        </div>
       </div>
     </div>
 
