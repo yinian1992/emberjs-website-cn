@@ -306,7 +306,7 @@ Handlebars 表达式，无论是一个简单值还是一个诸如 `{{#with}}` �
   <img src="/images/view-guide/virtual-view-hierarchy.png">
 </figure>
 
-在 `TextArea` 中， `parentView` 不会指向 `FDAContactForm` ，并且
+在 `TextArea` 中， `parentView` 会指向 `FDAContactForm` ，并且
 `FDAContactForm` 的 `childViews` 会是一个只包含 `TextArea` 的数组。
 
 你可以通过 `_parentView` 和 `_childViews` 来查看内部视图层级，这会包含虚拟视
